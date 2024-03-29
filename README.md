@@ -9,14 +9,13 @@ For using colab, use following command in one "new" notebook
 ```
 Then, the repo will be stored at '/content/smart_tomAItoes'.
 
-In order to make packages available, open colab
-
 # Repo Setup
 Starting code should be in the highest level (as main.py) in order to enable usability within colab and vscode.
 
 # Setup of environment 
-TBD -> conda environment?
-Settings for environment to be defined (flake8, line length, ...)
+TODO TBD -> conda environment?
+TODO Settings for environment to be defined (flake8, line length, ...)
+TODO requirements.txt to install dependencies on colab necessary
 
 Create settings file via Preferences: Open Workspace Settings (json) and add content of settings > settings_vscode.json
 
