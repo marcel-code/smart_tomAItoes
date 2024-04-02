@@ -12,7 +12,14 @@ Then, the repo will be stored at '/content/smart_tomAItoes'.
 # Repo Setup
 Starting code should be in the highest level (as main.py) in order to enable usability within colab and vscode.
 
-# Setup of environment 
+## Setup of environment 
+# Extensions to install
+- flake8 - ms-python.flake8
+- black formatter - ms-python.black-formatter
+- isort - ms-python.isort
+- autodocstring - njpwerner.autodocstring
+
+# Conda Environment
 TODO TBD -> conda environment?
 TODO Settings for environment to be defined (flake8, line length, ...)
 TODO requirements.txt to install dependencies on colab necessary
