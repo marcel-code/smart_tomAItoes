@@ -22,16 +22,33 @@ class DummyLoss(torch.nn.Module):
         return loss.mean()
 
 
-class CustomLoss(torch.nn.Module):
+class ProvidedLoss(torch.nn.Module):
     def __init__(self):
-        super(CustomLoss, self).__init__()
+        super(ProvidedLoss, self).__init__()
 
     def forward(self, pred: dict, truth: dict) -> float:
-        # TODO Implementation of custom loss function error handling if needed
+        # TODO Implementation error handling if needed
         error = 0
         for trait in ["height", "fw_plant", "leaf_area", "number_of_red_fruits"]:
             diff = [((pred[i][trait] - truth[i][trait]) / (truth[i][trait] + 1)) ** 2 for i in truth]
-            error += np.sqrt(np.nanmean(diff))
+            error += torch.sqrt(torch.nanmean(torch.Tensor(diff)))
+        return error / 4
+
+
+class ProvidedLossTraining(torch.nn.Module):
+    def __init__(self):
+        super(ProvidedLossTraining, self).__init__()
+
+    def forward(self, pred: dict, truth: dict) -> float:
+        # TODO Implementation error handling if needed
+        # TODO Handling nans!
+        # TODO Test tensor implementation with demo set
+        traits = pred.size(1)
+        error = 0
+        for trait in range(traits):  # Iterate over traits
+            diff = ((pred[:, trait] - truth[:, trait]) / (truth[:, trait] + 1)) ** 2
+            error += torch.sqrt(torch.nanmean(diff))
+
         return error / 4
 
 
@@ -58,7 +75,7 @@ if __name__ == "__main__":
     assert len(pred.keys()) == len(truth.keys())
     print(f"Len of keys identical = {len(pred.keys())} and {len(truth.keys())}")
     # get error caluclator
-    loss_fn = CustomLoss()
+    loss_fn = ProvidedLoss()
     loss = loss_fn(pred, truth)
     # check target error and calculated error
     print(f"Error calculated: {loss} - target error: {gt_error_check} - difference: {loss - gt_error_check}")

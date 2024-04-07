@@ -5,19 +5,19 @@ data:
     depth_dir: depth
     train_size: 150
     val_size: 50
-    batch_size: 4
+    batch_size: 2
     grayscale: true
     resize : [340,240]
-    num_workers: 4
+    num_workers: 2
 model:
-    name: DummyModel
+    name: initialModel
     input_shape: [340,240]
 train:
     seed: None
-    epochs: 40
-    log_every_iter: 100
-    eval_every_iter: 500
-    loss: CustomLoss
+    epochs: 10
+    log_every_iter: 1
+    eval_every_iter: 1
+    loss: ProvidedLossTraining
     optimizer:
       lr: 0.001
       momentum: 0.9

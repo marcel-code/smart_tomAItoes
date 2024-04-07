@@ -5,6 +5,7 @@ artifacts.
 """
 
 import argparse
+import json
 import logging
 import os
 import shutil
@@ -64,14 +65,21 @@ class TomatoDataset(BaseDataset):
         val_images = images[conf.train_size : conf.train_size + conf.val_size]
         self.images = {"train": train_images, "val": val_images}
 
+        # read ground truth data
+        ground_truth_train = "ground_truth_train.json"
+
+        # get file data
+        with open(os.path.join(DATA_PATH, "training", ground_truth_train)) as g:
+            self.ground_truth = json.load(g)
+
     def get_dataset(self, split):
-        return _Dataset(self.conf, self.images[split], split)
+        return _Dataset(self.conf, self.images[split], split, self.ground_truth)
 
 
 class _Dataset(torch.utils.data.Dataset):
     dataset = 0
 
-    def __init__(self, conf, image_names, split):
+    def __init__(self, conf, image_names, split, ground_truth):
         self.conf = conf
         self.split = split
         self.image_names = np.array(image_names)
@@ -79,6 +87,7 @@ class _Dataset(torch.utils.data.Dataset):
         self.depth_dir = DATA_PATH / conf.data_dir / conf.depth_dir
         self.grayscale = conf.grayscale
         self.resize = conf.resize
+        self.ground_truth = ground_truth
 
         _Dataset.dataset = _Dataset.dataset + 1
 
@@ -87,19 +96,13 @@ class _Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         return self.getitem(idx)
 
-    def _preprocess_data(self, img):
-        """Preprocess Data
+    def _preprocess_rgb_data(self, img):
+        """Preprocess rgb data
 
         Parameters
         ----------
         img : _type_
             _description_
-        H_conf : _type_
-            _description_
-        ps : _type_
-            _description_
-        left : bool, optional
-            _description_, by default False
 
         Returns
         -------
@@ -107,6 +110,21 @@ class _Dataset(torch.utils.data.Dataset):
             _description_
         """
 
+        return img
+
+    def _preprocess_depth_data(self, img):
+        """Preprocess Depth data
+
+        Parameters
+        ----------
+        img : _type_
+            _description_
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         return img
 
     def getitem(self, idx):
@@ -130,7 +148,7 @@ class _Dataset(torch.utils.data.Dataset):
         img_rgb = cv2.resize(img_rgb, self.resize, interpolation=cv2.INTER_AREA)
         # TODO read target values
         data = {
-            # "name": name,
+            "name": name,
             "rgb": img_rgb,
             # "depth": img_depth,
             # "irL": img_irL,
@@ -138,6 +156,8 @@ class _Dataset(torch.utils.data.Dataset):
             # "idx": idx,
             # "category": name[0],
             "label": np.random.randint(2, size=2),
+            "ground_truth": self.ground_truth[name],
+            "pred": {},
         }
 
         return data

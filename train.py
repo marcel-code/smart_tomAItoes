@@ -11,7 +11,58 @@ from tqdm import tqdm
 from src import logger
 from src.data.dataloader import TomatoDataset
 from src.models import get_model
+from src.models.utils.losses import ProvidedLoss
 from src.settings import TRAINING_PATH
+
+## TODO SECTION
+
+# TODO Setting up evaluation pipeline
+# TODO moving get_* function to utils
+# TODO implementation of evaluation
+# TODO Implemenation of loss function
+# TODO Dataloader depth image inclusion
+# TODO Concept creation for model
+# TODO Tensorboard logging finalization
+# TODO Get tensorboard running
+
+# TODO LIST
+# TODO DAtaloader adaption
+# TODO Model adaption
+# TODO Evaluation scipt
+# TODO Concept creation
+
+
+def get_ground_truth_tensor(data, key_list=["height", "fw_plant", "leaf_area", "number_of_red_fruits"]):
+    """Conversion of dict to tensor for loss calculation"""
+    res = torch.Tensor(len(data["name"]), len(key_list))
+    for i in range(len(data["name"])):
+        for j in range(len(key_list)):
+            res[i, j] = data["ground_truth"][key_list[j]][i]
+
+    return res
+
+
+def get_ground_truth_dict(data):
+    return {
+        data["name"][i]: {
+            "height": data["ground_truth"]["height"][i],
+            "fw_plant": data["ground_truth"]["fw_plant"][i],
+            "leaf_area": data["ground_truth"]["leaf_area"][i],
+            "number_of_red_fruits": data["ground_truth"]["number_of_red_fruits"][i],
+        }
+        for i in range(len(data["name"]))
+    }
+
+
+def get_output_dict(pred, data, key_list=["height", "fw_plant", "leaf_area", "number_of_red_fruits"]):
+    """Conversion of model output () to dict"""
+    # TODO Check for correctness
+    res = {}
+    for i in range(len(data["name"])):
+        res[data["name"][i]] = {}
+        for j in range(len(key_list)):
+            res[data["name"][i]][key_list[j]] = pred[i][j]
+    return res
 
 
 # from torch.utils.tensorboard import SummaryWriter
@@ -25,7 +76,6 @@ def train_one_epoch(epoch_index, training_loader, optimizer, model, num_batches=
     for i, data in tqdm(enumerate(training_loader), desc="Model Training"):
         # Every data instance is an input + label pair
         inputs = data["rgb"]
-        labels = data["label"]
 
         # Zero your gradients for every batch!
         optimizer.zero_grad()
@@ -33,8 +83,11 @@ def train_one_epoch(epoch_index, training_loader, optimizer, model, num_batches=
         # Make predictions for this batch
         outputs = model(inputs)
 
+        # post-process data for loss calc
+        ground_truth = get_ground_truth_tensor(data)
+
         # Compute the loss and its gradients
-        loss = model.loss(outputs, labels)
+        loss = model.loss(outputs, ground_truth)
         loss.backward()
 
         # Adjust learning weights
@@ -89,7 +142,7 @@ def train(conf):
         # Disable gradient computation and reduce memory consumption.
         with torch.no_grad():
             for i, vdata in enumerate(val_loader):
-                vinputs, vlabels = vdata["rgb"], vdata["label"]
+                vinputs, vlabels = vdata["rgb"], get_ground_truth_tensor(vdata)
                 voutputs = model(vinputs)
                 vloss = model.loss(voutputs, vlabels)
                 running_vloss += vloss
@@ -164,10 +217,3 @@ if __name__ == "__main__":
     conf.experiment = args.experiment
 
     train(conf)
-
-
-# TODO LIST
-# TODO DAtaloader adaption
-# TODO Model adaption
-# TODO Evaluation scipt
-# TODO Concept creation
