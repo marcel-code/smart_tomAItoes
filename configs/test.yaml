@@ -1,0 +1,32 @@
+data:
+    name: tomatoes
+    data_dir: training
+    image_dir: rgb
+    depth_dir: depth
+    train_size: 150
+    val_size: 50
+    batch_size: 4
+    grayscale: true
+    resize : [340,240]
+    num_workers: 4
+model:
+    name: DummyModel
+    input_shape: [340,240]
+train:
+    seed: None
+    epochs: 40
+    log_every_iter: 100
+    eval_every_iter: 500
+    optimizer:
+      lr: 0.001
+      momentum: 0.9
+    lr: 1e-4
+    lr_schedule:
+      start: 20
+      type: exp
+      on_epoch: true
+      exp_div_10: 10
+    # TODO Enable dynamic loading of loss function into model
+# TODO Selection of cloud or local computing
+# TODO include all necessary and remove all unnecessary settings
+# TODO include differentiatiation between training and evaluation
