@@ -1,12 +1,7 @@
 import importlib.util
 
-import torch
-
 from ..utils.tools import get_class
 from .baseModel import BaseModel
-
-# model_type = torch.nn.Module
-model_type = BaseModel
 
 
 def get_model(name):
@@ -21,7 +16,7 @@ def get_model(name):
             spec = None
         if spec is not None:
             try:
-                return get_class(path, model_type)
+                return get_class(path, BaseModel)
             except AssertionError:
                 mod = __import__(path, fromlist=[""])
                 try:

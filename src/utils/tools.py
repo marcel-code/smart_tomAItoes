@@ -76,15 +76,8 @@ class PRMetric:
     @torch.no_grad()
     def update(self, labels, predictions, mask=None):
         assert labels.shape == predictions.shape
-        self.labels += (
-            (labels[mask] if mask is not None else labels).cpu().numpy().tolist()
-        )
-        self.predictions += (
-            (predictions[mask] if mask is not None else predictions)
-            .cpu()
-            .numpy()
-            .tolist()
-        )
+        self.labels += (labels[mask] if mask is not None else labels).cpu().numpy().tolist()
+        self.predictions += (predictions[mask] if mask is not None else predictions).cpu().numpy().tolist()
 
     @torch.no_grad()
     def compute(self):
@@ -206,6 +199,23 @@ def get_class(mod_path, BaseClass):
     return classes[0][1]
 
 
+def get_loss(mod_path, BaseClass, loss_name):
+    """Get the class object which inherits from BaseClass and is defined in
+    the module named mod_name, child of base_path.
+    """
+    import inspect
+
+    mod = __import__(mod_path, fromlist=[""])
+    classes = inspect.getmembers(mod, inspect.isclass)
+    # Filter classes defined in the module
+    classes = [c for c in classes if c[1].__module__ == mod_path]
+    # Filter classes inherited from BaseModel
+    classes = [c for c in classes if issubclass(c[1], BaseClass)]
+    classes = [c for c in classes if loss_name in c]
+    assert len(classes) == 1, classes
+    return classes[0][1]
+
+
 def set_num_threads(nt):
     """Force numpy and other libraries to use a limited number of threads."""
     try:
@@ -250,11 +260,7 @@ def set_random_state(state):
     torch.set_rng_state(pth_state)
     np.random.set_state(np_state)
     random.setstate(py_state)
-    if (
-        cuda_state is not None
-        and torch.cuda.is_available()
-        and len(cuda_state) == torch.cuda.device_count()
-    ):
+    if cuda_state is not None and torch.cuda.is_available() and len(cuda_state) == torch.cuda.device_count():
         torch.cuda.set_rng_state_all(cuda_state)
 
 

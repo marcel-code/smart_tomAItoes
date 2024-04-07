@@ -47,7 +47,7 @@ For adding new setting values to the config file, make sure to add the according
 For adding a new model for the evaluation, add a new .py file including the new model. Make sure that the model inherits from torch.nn.Module Class, in order to be aligned with the dynamic model loader (get_model). Try to keep aligned with DummyModel regarding the structure.
 
 # Adding losses
-Adding custom loss to the src.models.utils.losses.py file and load it into your model for the loss_fn
+Adding custom loss to the src.models.utils.losses.py file. Dynamic loading by changing name in config file. Make sure to implement a Class for your specific loss.
 
 # Execute Training
 python train.py <Experimentname> --conf <path to config>

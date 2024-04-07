@@ -17,6 +17,7 @@ train:
     epochs: 40
     log_every_iter: 100
     eval_every_iter: 500
+    loss: CustomLoss
     optimizer:
       lr: 0.001
       momentum: 0.9
