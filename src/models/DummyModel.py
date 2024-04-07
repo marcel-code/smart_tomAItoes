@@ -11,7 +11,7 @@ class DummyModel(BaseModel):
         self.name = "DummyModel"
         try:
             # TODO Handling of input_shape via OmegaConf
-            inputShape = conf.model.input_shape
+            self.inputShape = conf.model.input_shape
         except ConfigAttributeError:
             print(
                 "Key conf.model.input_shape not included in config file! Change either config file or assign another value!"
