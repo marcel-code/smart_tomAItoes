@@ -171,4 +171,3 @@ if __name__ == "__main__":
 # TODO Model adaption
 # TODO Evaluation scipt
 # TODO Concept creation
-# TODO Optional: dynamic selection of model via include

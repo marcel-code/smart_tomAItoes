@@ -27,7 +27,6 @@ train:
       type: exp
       on_epoch: true
       exp_div_10: 10
-    # TODO Enable dynamic loading of loss function into model
 # TODO Selection of cloud or local computing
 # TODO include all necessary and remove all unnecessary settings
 # TODO include differentiatiation between training and evaluation
