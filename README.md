@@ -2,12 +2,13 @@
 Repo for Greenhouse Challenge 2024. Smart TomAItoes for the win.
 
 # Initialization
-For using colab, use following command in one "new" notebook
-
-```bash
-!git clone https://github.com/marcel-code/smart_tomAItoes.git
-```
-Then, the repo will be stored at '/content/smart_tomAItoes'.
+For using colab, use the Notebook within colab.
+The first part will initialize everything needed
+  - cloning of current main version of code
+  - including repo location to system path
+  - checking if setup was successfull (simple test
+  - 
+The repo will be stored at '/content/smart_tomAItoes'.
 
 # Repo Setup
 Starting code should be in the highest level (as main.py) in order to enable usability within colab and vscode.
