@@ -6,8 +6,8 @@ For using colab, use the Notebook within colab.
 The first part will initialize everything needed
   - cloning of current main version of code
   - including repo location to system path
-  - checking if setup was successfull (simple test
-  - 
+  - checking if setup was successfull (simple test)
+  -
 The repo will be stored at '/content/smart_tomAItoes'.
 
 # Repo Setup
@@ -34,6 +34,11 @@ Setting up environment:
 conda env create -f conda_env_smart_tomAItoes.yaml  # for creating env
 conda activate smarties_partA  # for activating env
 conda deactivate  # for deactivating env
+```
+
+Export conda environment:
+```bash
+conda env export > filename.yaml
 ```
 
 # Including dataset into local environment
