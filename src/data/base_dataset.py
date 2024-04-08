@@ -11,10 +11,7 @@ import omegaconf
 import torch
 from omegaconf import OmegaConf
 from torch.utils.data import DataLoader, Sampler, get_worker_info
-from torch.utils.data._utils.collate import (
-    default_collate_err_msg_format,
-    np_str_obj_array_pattern,
-)
+from torch.utils.data._utils.collate import default_collate_err_msg_format, np_str_obj_array_pattern
 
 from ..utils.tensor import string_classes
 from ..utils.tools import set_num_threads, set_seed
@@ -60,11 +57,7 @@ def collate(batch):
             except AttributeError:
                 storage = elem.storage()._new_shared(numel)  # noqa: F841
         return torch.stack(batch, dim=0)
-    elif (
-        elem_type.__module__ == "numpy"
-        and elem_type.__name__ != "str_"
-        and elem_type.__name__ != "string_"
-    ):
+    elif elem_type.__module__ == "numpy" and elem_type.__name__ != "str_" and elem_type.__name__ != "string_":
         if elem_type.__name__ == "ndarray" or elem_type.__name__ == "memmap":
             # array of string classes and object
             if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
@@ -160,13 +153,12 @@ class BaseDataset(metaclass=ABCMeta):
             batch_size = self.conf[split + "_batch_size"]
         except omegaconf.MissingMandatoryValue:
             batch_size = self.conf.batch_size
-        num_workers = self.conf.get("num_workers", batch_size)
+        batch_size = batch_size if split != "test" else 1
+        num_workers = batch_size
         drop_last = True if split == "train" else False
         if distributed:
             shuffle = False
-            sampler = torch.utils.data.distributed.DistributedSampler(
-                dataset, drop_last=drop_last
-            )
+            sampler = torch.utils.data.distributed.DistributedSampler(dataset, drop_last=drop_last)
         else:
             sampler = None
             if shuffle is None:

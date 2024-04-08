@@ -42,7 +42,6 @@ class ProvidedLossTraining(torch.nn.Module):
     def forward(self, pred: dict, truth: dict) -> float:
         # TODO Implementation error handling if needed
         # TODO Handling nans!
-        # TODO Test tensor implementation with demo set
         traits = pred.size(1)
         error = 0
         for trait in range(traits):  # Iterate over traits

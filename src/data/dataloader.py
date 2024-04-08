@@ -20,7 +20,7 @@ from omegaconf import OmegaConf
 from tqdm import tqdm
 
 from ..settings import DATA_PATH
-from ..utils.image import read_image
+from ..utils.image import numpy_image_to_torch, read_image
 from ..utils.tools import fork_rng
 from .base_dataset import BaseDataset
 
@@ -40,6 +40,7 @@ class TomatoDataset(BaseDataset):
         # splits
         "train_size": 100,
         "val_size": 10,
+        "test": False,
         "shuffle_seed": 0,  # or None to skip
         # image loading
         "grayscale": False,
@@ -61,16 +62,20 @@ class TomatoDataset(BaseDataset):
 
         if conf.shuffle_seed is not None:
             np.random.RandomState(conf.shuffle_seed).shuffle(images)
-        train_images = images[: conf.train_size]
-        val_images = images[conf.train_size : conf.train_size + conf.val_size]
-        self.images = {"train": train_images, "val": val_images}
+        if not conf.test:
+            train_images = images[: conf.train_size]
+            val_images = images[conf.train_size : conf.train_size + conf.val_size]
+            self.images = {"train": train_images, "val": val_images}
 
-        # read ground truth data
-        ground_truth_train = "ground_truth_train.json"
+            # read ground truth data
+            ground_truth_train = "ground_truth_train.json"
 
-        # get file data
-        with open(os.path.join(DATA_PATH, "training", ground_truth_train)) as g:
-            self.ground_truth = json.load(g)
+            # get file data
+            with open(os.path.join(DATA_PATH, "training", ground_truth_train)) as g:
+                self.ground_truth = json.load(g)
+        else:
+            self.images = {"test": images}
+            self.ground_truth = {}
 
     def get_dataset(self, split):
         return _Dataset(self.conf, self.images[split], split, self.ground_truth)
@@ -97,7 +102,7 @@ class _Dataset(torch.utils.data.Dataset):
         return self.getitem(idx)
 
     def _preprocess_rgb_data(self, img):
-        """Preprocess rgb data
+        """Preprocess rgb data including image to torch conversion
 
         Parameters
         ----------
@@ -109,11 +114,11 @@ class _Dataset(torch.utils.data.Dataset):
         _type_
             _description_
         """
-
-        return img
+        img = cv2.resize(img, self.resize, interpolation=cv2.INTER_AREA)
+        return numpy_image_to_torch(img)
 
     def _preprocess_depth_data(self, img):
-        """Preprocess Depth data
+        """Preprocess Depth data including
 
         Parameters
         ----------
@@ -131,21 +136,18 @@ class _Dataset(torch.utils.data.Dataset):
         name = self.image_names[idx].split(".")[0]
 
         # Read all images
-        img_rgb = read_image(self.image_dir / f"{name}.png")
-        img_depth = read_image(self.depth_dir / f"{name}_depth.png")
-        img_irL = read_image(self.depth_dir / f"{name}_irL.png")
-        img_irR = read_image(self.depth_dir / f"{name}_irR.png")
+        # TODO read_image to load_image + grayscale inclusion
+        img_rgb = read_image(self.image_dir / f"{name}.png", self.grayscale)
+        # img_depth = read_image(self.depth_dir / f"{name}_depth.png")
+        # img_irL = read_image(self.depth_dir / f"{name}_irL.png")
+        # img_irR = read_image(self.depth_dir / f"{name}_irR.png")
 
         if img_rgb is None:
             raise FileNotFoundError(f"Image {name} not known")
-        img_rgb = img_rgb.astype(np.float32) / 255.0
         size = img_rgb.shape[:2][::-1]
 
-        # TODO check for grayscale
-        if self.grayscale:
-            img_rgb = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+        img_rgb = self._preprocess_rgb_data(img_rgb)
 
-        img_rgb = cv2.resize(img_rgb, self.resize, interpolation=cv2.INTER_AREA)
         # TODO read target values
         data = {
             "name": name,
@@ -155,8 +157,8 @@ class _Dataset(torch.utils.data.Dataset):
             # "irR": img_irR,
             # "idx": idx,
             # "category": name[0],
-            "label": np.random.randint(2, size=2),
-            "ground_truth": self.ground_truth[name],
+            "label": np.random.randint(2, size=2) if self.split in ["train", "val"] else [],
+            "ground_truth": self.ground_truth[name] if self.split in ["train", "val"] else {},
             "pred": {},
         }
 

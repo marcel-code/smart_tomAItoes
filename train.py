@@ -113,12 +113,13 @@ def train(conf):
 
     train_loader = data_loader.get_data_loader("train")
     val_loader = data_loader.get_data_loader("val")
-
+    # test_loader = data_loader.get_data_loader("test")
     # TODO fix collate issue -> enabling loading of all datatypes
 
     # Dynamic loading of model (need to be defined in the model section (single .py for a model class))
     model = get_model(conf.model.name)(conf)
     # model = DummyModel(conf)
+    # TODO optimizer dynamic load
     optimizer = torch.optim.SGD(model.parameters(), lr=conf.train.optimizer.lr, momentum=conf.train.optimizer.momentum)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -168,7 +169,6 @@ def train(conf):
             torch.save(model.state_dict(), model_path)
 
         # TODO Generation of simple model for training -> loading and training function
-        # TODO implementation of loss function
 
         # TODO Implementation of evaluation procedure
         epoch_number = epoch_number + 1

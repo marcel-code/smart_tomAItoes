@@ -6,10 +6,10 @@ from ..utils.tools import get_loss
 from .baseModel import BaseModel
 
 
-class DummyModel(BaseModel):
+class initialModel(BaseModel):
 
     def _init(self, conf):
-        self.name = "DummyModel"
+        self.name = "initialModel"
         try:
             # TODO Handling of input_shape via OmegaConf
             self.inputShape = conf.model.input_shape
@@ -48,6 +48,12 @@ class DummyModel(BaseModel):
         x = self.activation(x)
         x = self.linear2(x)
         x = self.sigmoid(x)
+
+        # x = PreTrainedModel(x) # output: Low Level Feature
+        # Merkmale zu Layer y entnehmen ->
+        # ...
+        # Low Level Feature processing via top layers aka fully connected or whatever
+        # Final Layer output: 4 values (height, fw_plant, number of tomatoes, leaf_area)
         return x
 
     def loss(self, pred, ground_truth):
