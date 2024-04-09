@@ -1,0 +1,8 @@
+questions:
+
+- conda problem: Packages nicht available.. brauchen wir die? suche dann nach alternative
+- how to get your branches next to mine?
+- added settings_vscode.json correctly?
+- explain the different levels of code
+- explain the overall structure
+- line too long? Flake8
