@@ -177,7 +177,7 @@ def train(conf):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("experiment", type=str, default="Test")
-    parser.add_argument("--conf", type=str, default=".\\configs\\test.yaml")
+    parser.add_argument("--conf", type=str, default=".\\configs\\train.yaml")
     parser.add_argument(
         "--mixed_precision",
         "--mp",

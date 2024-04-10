@@ -4,7 +4,10 @@ __pycache__/
 *$py.class
 .vscode
 data/training/*
+data/validation/*
 outputs
+venv_tomato/*
+requirements.txt
 # C extensions
 *.so
 

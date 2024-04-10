@@ -1,6 +1,7 @@
 import argparse
 import copy
-from datetime import datetime
+
+# from datetime import datetime
 from pathlib import Path
 
 import torch
@@ -11,7 +12,7 @@ from src import logger
 from src.data.dataloader import TomatoDataset
 from src.settings import EVAL_PATH
 
-## TODO SECTION
+# TODO SECTION
 # TODO Dataloader testing test
 
 
@@ -36,6 +37,8 @@ def get_ground_truth_dict(data):
         for i in range(len(data["name"]))
     }
 
+data komt als array raus
+1x4
 
 def get_output_dict(pred, data, key_list=["height", "fw_plant", "leaf_area", "number_of_red_fruits"]):
     """Conversion of model output () to dict"""
@@ -46,6 +49,10 @@ def get_output_dict(pred, data, key_list=["height", "fw_plant", "leaf_area", "nu
         for j in range(len(key_list)):
             res[data["name"][i]][key_list[j]] = pred[i][j]
     return res
+data --> vom data loader
+
+result = []
+result_dict = {}
 
 
 def evaluation(conf):
@@ -66,7 +73,7 @@ def evaluation(conf):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("experiment", type=str, default="Test")
-    parser.add_argument("--conf", type=str, default=".\\configs\\test.yaml")
+    parser.add_argument("--conf", type=str, default=".\\configs\\eval.yaml")
     parser.add_argument(
         "--mixed_precision",
         "--mp",

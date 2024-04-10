@@ -5,7 +5,7 @@ data:
     depth_dir: depth
     train_size: 150
     val_size: 50
-    test: true
+    test: false
     batch_size: 2
     grayscale: true
     resize : [340,240]

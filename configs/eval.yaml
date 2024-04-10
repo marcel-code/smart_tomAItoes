@@ -1,0 +1,35 @@
+data:
+    name: tomatoes
+    data_dir: validation
+    image_dir: rgb
+    depth_dir: depth
+    train_size: 150
+    val_size: 50
+    test: true
+    batch_size: 2
+    grayscale: true
+    resize : [340,240]
+    num_workers: 2
+model:
+    name: initialModel
+    input_shape: [340,240]
+train:
+    seed: None
+    epochs: 10
+    log_every_iter: 1
+    eval_every_iter: 1
+    loss: ProvidedLossTraining
+    optimizer:
+      lr: 0.001
+      momentum: 0.9
+    lr: 1e-4
+    lr_schedule:
+      start: 20
+      type: exp
+      on_epoch: true
+      exp_div_10: 10
+
+# TODO Selection of cloud or local computing
+# TODO include all necessary and remove all unnecessary settings
+# TODO include differentiatiation between training and evaluation
+# TODO implement lr scheduler
