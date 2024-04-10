@@ -116,7 +116,7 @@ def numpy_image_to_torch(image: np.ndarray) -> torch.Tensor:
         image = image[None]  # add channel axis
     else:
         raise ValueError(f"Not an image: {image.shape}")
-    return torch.tensor(image / 255.0, dtype=torch.float)
+    return torch.tensor(image, dtype=torch.float)
 
 
 def load_image(path: Path, grayscale=False) -> torch.Tensor:

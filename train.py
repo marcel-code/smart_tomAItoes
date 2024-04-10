@@ -29,6 +29,8 @@ from src.utils.misc import get_ground_truth_dict, get_ground_truth_tensor, get_o
 # TODO Learning scheduler integrieren und finalisieren
 # TODO Modell mit VGG als Backbone in initialModel integrieren
 # TODO InitialModel - Scaling of output to max ranges -> definition of max ranges based on provided data
+# TODO fix issue with batchsize = num:workers in yaml
+# TODO implementation of colab run - therefore: inclusion of all necessary packages, ...
 
 # TODO LIST
 # TODO DAtaloader adaption
@@ -259,6 +261,7 @@ def train(conf):
             torch.save(model.state_dict(), model_path)
 
         # TODO Implementation of evaluation procedure
+        # TODO Inclusion of additional metric to tensorboard and overview
         epoch_number = epoch_number + 1
 
 
