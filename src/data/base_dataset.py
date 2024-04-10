@@ -154,7 +154,7 @@ class BaseDataset(metaclass=ABCMeta):
         except omegaconf.MissingMandatoryValue:
             batch_size = self.conf.batch_size
         batch_size = batch_size if split != "test" else 1
-        num_workers = batch_size
+        num_workers = self.conf.num_workers
         drop_last = True if split == "train" else False
         if distributed:
             shuffle = False

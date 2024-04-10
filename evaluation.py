@@ -37,7 +37,9 @@ def get_ground_truth_dict(data):
     }
 
 
-def get_output_dict(pred, data, key_list=["height", "fw_plant", "leaf_area", "number_of_red_fruits"]):
+def get_output_dict(
+    pred: torch.Tensor, data: dict, key_list=["height", "fw_plant", "leaf_area", "number_of_red_fruits"]
+):
     """Conversion of model output () to dict"""
     # TODO Check for correctness
     res = {}

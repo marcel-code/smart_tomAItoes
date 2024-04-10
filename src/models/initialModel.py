@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torchvision.models as pretrained_models
 from omegaconf.errors import ConfigAttributeError, ConfigKeyError
 
 from ..utils.tools import get_loss
@@ -10,6 +11,10 @@ class initialModel(BaseModel):
 
     def _init(self, conf):
         self.name = "initialModel"
+
+        pretrained_model = pretrained_models.vgg16(pretrained=True)
+        pretrained_model.classifier = pretrained_model.classifier[:-1]
+        self.backbone = pretrained_model
         try:
             # TODO Handling of input_shape via OmegaConf
             self.inputShape = conf.model.input_shape
@@ -26,28 +31,25 @@ class initialModel(BaseModel):
 
         self.loss_fn = get_loss("src.models.utils.losses", torch.nn.Module, conf.train.loss)()
 
+        # self.sigmoid_scaling = torch.Tensor()
         self.output = {}
 
     def _generate_model_layers(self):
         self.flatten = torch.nn.Flatten()
-        if len(self.inputShape) > 2:
-            self.linear1 = torch.nn.Linear(self.inputShape[0] * self.inputShape[1] * self.inputShape[2], 200)
-        elif len(self.inputShape) == 2:
-            self.linear1 = torch.nn.Linear(self.inputShape[0] * self.inputShape[1], 200)
-        else:
-            raise NotImplementedError("Case not implemented in DummyModel")
-
-        self.activation = torch.nn.ReLU()
+        self.linear1 = torch.nn.Linear(4096, 200)
         self.linear2 = torch.nn.Linear(200, 4)
+        self.activation = torch.nn.ReLU()
+        self.finalLayer = torch.nn.Linear(4, 4)
         self.sigmoid = torch.nn.Sigmoid()
 
     def _forward(self, x):
         # Model Architecture
+        x = self.backbone(x)
         x = self.flatten(x)
         x = self.linear1(x)
         x = self.activation(x)
         x = self.linear2(x)
-        x = self.sigmoid(x)
+        # x = self.activation(x)
 
         # x = PreTrainedModel(x) # output: Low Level Feature
         # Merkmale zu Layer y entnehmen ->

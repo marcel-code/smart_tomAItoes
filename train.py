@@ -1,5 +1,7 @@
 import argparse
 import copy
+import re
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
@@ -11,19 +13,22 @@ from tqdm import tqdm
 from src import logger
 from src.data.dataloader import TomatoDataset
 from src.models import get_model
-from src.models.utils.losses import ProvidedLoss
 from src.settings import TRAINING_PATH
+from src.utils.misc import get_ground_truth_dict, get_ground_truth_tensor, get_output_dict
 
 ## TODO SECTION
 
 # TODO Setting up evaluation pipeline
 # TODO moving get_* function to utils
 # TODO implementation of evaluation
-# TODO Implemenation of loss function
 # TODO Dataloader depth image inclusion
 # TODO Concept creation for model
 # TODO Tensorboard logging finalization
 # TODO Get tensorboard running
+# TODO Modell nach training abspeichern
+# TODO Learning scheduler integrieren und finalisieren
+# TODO Modell mit VGG als Backbone in initialModel integrieren
+# TODO InitialModel - Scaling of output to max ranges -> definition of max ranges based on provided data
 
 # TODO LIST
 # TODO DAtaloader adaption
@@ -31,38 +36,98 @@ from src.settings import TRAINING_PATH
 # TODO Evaluation scipt
 # TODO Concept creation
 
+default_train_conf = {
+    "seed": "???",  # training seed
+    "epochs": 1,  # number of epochs
+    "optimizer": "adam",  # name of optimizer in [adam, sgd, rmsprop]
+    "opt_regexp": None,  # regular expression to filter parameters to optimize
+    "optimizer_options": {},  # optional arguments passed to the optimizer
+    "lr": 0.001,  # learning rate
+    "lr_schedule": {
+        "type": None,  # string in {factor, exp, member of torch.optim.lr_scheduler}
+        "start": 0,
+        "exp_div_10": 0,
+        "on_epoch": False,
+        "factor": 1.0,
+        "options": {},  # add lr_scheduler arguments here
+    },
+    "lr_scaling": [(100, ["dampingnet.const"])],
+    "eval_every_iter": 1000,  # interval for evaluation on the validation set
+    "save_every_iter": 5000,  # interval for saving the current checkpoint
+    "log_every_iter": 200,  # interval for logging the loss to the console
+    "log_grad_every_iter": None,  # interval for logging gradient hists
+    "test_every_epoch": 1,  # interval for evaluation on the test benchmarks
+    "keep_last_checkpoints": 10,  # keep only the last X checkpoints
+    "load_experiment": None,  # initialize the model from a previous experiment
+    "median_metrics": [],  # add the median of some metrics
+    "recall_metrics": {},  # add the recall of some metrics
+    "pr_metrics": {},  # add pr curves, set labels/predictions/mask keys
+    "best_key": "loss/total",  # key to use to select the best checkpoint
+    "dataset_callback_fn": None,  # data func called at the start of each epoch
+    "dataset_callback_on_val": False,  # call data func on val data?
+    "clip_grad": None,
+    "pr_curves": {},
+    "plot": None,
+    "submodules": [],
+}
 
-def get_ground_truth_tensor(data, key_list=["height", "fw_plant", "leaf_area", "number_of_red_fruits"]):
-    """Conversion of dict to tensor for loss calculation"""
-    res = torch.Tensor(len(data["name"]), len(key_list))
-    for i in range(len(data["name"])):
-        for j in range(len(key_list)):
-            res[i, j] = data["ground_truth"][key_list[j]][i]
 
-    return res
+def filter_parameters(params, regexp):
+    """Filter trainable parameters based on regular expressions."""
 
+    # Examples of regexp:
+    #     '.*(weight|bias)$'
+    #     'cnn\.(enc0|enc1).*bias'
+    def filter_fn(x):
+        n, p = x
+        match = re.search(regexp, n)
+        if not match:
+            p.requires_grad = False
+        return match
 
-def get_ground_truth_dict(data):
-    return {
-        data["name"][i]: {
-            "height": data["ground_truth"]["height"][i],
-            "fw_plant": data["ground_truth"]["fw_plant"][i],
-            "leaf_area": data["ground_truth"]["leaf_area"][i],
-            "number_of_red_fruits": data["ground_truth"]["number_of_red_fruits"][i],
-        }
-        for i in range(len(data["name"]))
-    }
+    params = list(filter(filter_fn, params))
+    assert len(params) > 0, regexp
+    logger.info("Selected parameters:\n" + "\n".join(n for n, p in params))
+    return params
 
 
-def get_output_dict(pred, data, key_list=["height", "fw_plant", "leaf_area", "number_of_red_fruits"]):
-    """Conversion of model output () to dict"""
-    # TODO Check for correctness
-    res = {}
-    for i in range(len(data["name"])):
-        res[data["name"][i]] = {}
-        for j in range(len(key_list)):
-            res[data["name"][i]][key_list[j]] = pred[i][j]
-    return res
+def pack_lr_parameters(params, base_lr, lr_scaling):
+    """Pack each group of parameters with the respective scaled learning rate."""
+    filters, scales = tuple(zip(*[(n, s) for s, names in lr_scaling for n in names]))
+    scale2params = defaultdict(list)
+    for n, p in params:
+        scale = 1
+        # TODO: use proper regexp rather than just this inclusion check
+        is_match = [f in n for f in filters]
+        if any(is_match):
+            scale = scales[is_match.index(True)]
+        scale2params[scale].append((n, p))
+    logger.info(
+        "Parameters with scaled learning rate:\n%s",
+        {s: [n for n, _ in ps] for s, ps in scale2params.items() if s != 1},
+    )
+    lr_params = [{"lr": scale * base_lr, "params": [p for _, p in ps]} for scale, ps in scale2params.items()]
+    return lr_params
+
+
+def get_lr_scheduler(optimizer, conf):
+    """Get lr scheduler specified by conf.train.lr_schedule."""
+    if conf.type not in ["factor", "exp", None]:
+        return getattr(torch.optim.lr_scheduler, conf.type)(optimizer, **conf.options)
+
+    # backward compatibility
+    def lr_fn(it):  # noqa: E306
+        if conf.type is None:
+            return 1
+        if conf.type == "factor":
+            return 1.0 if it < conf.start else conf.factor
+        if conf.type == "exp":
+            gam = 10 ** (-1 / conf.exp_div_10)
+            return 1.0 if it < conf.start else gam
+        else:
+            raise ValueError(conf.type)
+
+    return torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_fn)
 
 
 # from torch.utils.tensorboard import SummaryWriter
@@ -120,7 +185,25 @@ def train(conf):
     model = get_model(conf.model.name)(conf)
     # model = DummyModel(conf)
     # TODO optimizer dynamic load
-    optimizer = torch.optim.SGD(model.parameters(), lr=conf.train.optimizer.lr, momentum=conf.train.optimizer.momentum)
+    optimizer_fn = {
+        "sgd": torch.optim.SGD,
+        "adam": torch.optim.Adam,
+        "adamw": torch.optim.AdamW,
+        "rmsprop": torch.optim.RMSprop,
+    }[conf.train.optimizer.name]
+    params = [(n, p) for n, p in model.named_parameters() if p.requires_grad]
+    # if conf.train.opt_regexp:
+    #     params = filter_parameters(params, conf.train.opt_regexp)
+    all_params = [p for n, p in params]
+
+    lr_params = pack_lr_parameters(
+        params, conf.train.optimizer.lr, [(100, ["dampingnet.const"])]
+    )  # conf.train.lr_scaling)
+    optimizer = optimizer_fn(lr_params, lr=conf.train.optimizer.lr, **conf.train.optimizer.optimizer_options)
+    lr_scheduler = get_lr_scheduler(optimizer=optimizer, conf=conf.train.lr_schedule)
+
+    # optimizer = torch.optim.SGD(model.parameters(), lr=conf.train.optimizer.lr, momentum=conf.train.optimizer.momentum)
+    # lr_params = pack_lr_parameters(params, conf.train.lr, conf.train.lr_scaling)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     writer = SummaryWriter("outputs/training/{}/tensorboard_{}".format(conf.experiment, timestamp))
@@ -132,6 +215,12 @@ def train(conf):
 
     while epoch_number < conf.train.epochs:
         print("EPOCH {}:".format(epoch_number + 1))
+
+        # update learning rate
+        if conf.train.lr_schedule.on_epoch and epoch_number > 0:
+            old_lr = optimizer.param_groups[0]["lr"]
+            lr_scheduler.step()
+            logger.info(f'lr changed from {old_lr} to {optimizer.param_groups[0]["lr"]}')
 
         avg_loss = train_one_epoch(epoch_number, train_loader, optimizer, model)
 
@@ -166,9 +255,8 @@ def train(conf):
                     conf.experiment, timestamp, conf.model.name, epoch_number
                 )
             )
+            print(f"New best model saved at epoch {epoch_number}")
             torch.save(model.state_dict(), model_path)
-
-        # TODO Generation of simple model for training -> loading and training function
 
         # TODO Implementation of evaluation procedure
         epoch_number = epoch_number + 1
@@ -177,7 +265,7 @@ def train(conf):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("experiment", type=str, default="Test")
-    parser.add_argument("--conf", type=str, default=".\\configs\\test.yaml")
+    parser.add_argument("--conf", type=str, default=".\\configs\\train.yaml")
     parser.add_argument(
         "--mixed_precision",
         "--mp",

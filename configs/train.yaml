@@ -3,13 +3,13 @@ data:
     data_dir: training
     image_dir: rgb
     depth_dir: depth
-    train_size: 150
-    val_size: 50
-    test: true
-    batch_size: 2
-    grayscale: true
+    train_size: 50
+    val_size: 10
+    batch_size: 5
+    grayscale: false
     resize : [340,240]
-    num_workers: 2
+    num_workers: 4
+    test: false
 model:
     name: initialModel
     input_shape: [340,240]
@@ -20,14 +20,16 @@ train:
     eval_every_iter: 1
     loss: ProvidedLossTraining
     optimizer:
-      lr: 0.001
-      momentum: 0.9
+        name: sgd  # adam, adamw, rmsprop
+        lr: 0.001
+        optimizer_options:  # need to be added accordingly to optimizer
+            momentum: 0.9
     lr: 1e-4
     lr_schedule:
-      start: 20
-      type: exp
-      on_epoch: true
-      exp_div_10: 10
+        start: 3
+        type: exp  # factor, exp, None
+        on_epoch: true
+        exp_div_10: 10
 
 # TODO Selection of cloud or local computing
 # TODO include all necessary and remove all unnecessary settings

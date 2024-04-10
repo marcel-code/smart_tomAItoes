@@ -61,3 +61,4 @@ python train.py <Experimentname> --conf <path to config>
 ## Colab
 # Setup
 Select repo in colab under github in order to use the according files. In order to clone the correct branch, you have to adapt the clone command in the notebook.ipynb (just change main to whatever your branch is named)
+Happy working.
