@@ -31,7 +31,7 @@ from src.utils.misc import get_ground_truth_dict, get_ground_truth_tensor, get_o
 # TODO InitialModel - Scaling of output to max ranges -> definition of max ranges based on provided data
 # TODO fix issue with batchsize = num:workers in yaml
 # TODO implementation of colab run - therefore: inclusion of all necessary packages, ...
-
+# TODO undo deletion of scaling of image in numpy to torch (load_image)
 # TODO LIST
 # TODO DAtaloader adaption
 # TODO Model adaption
