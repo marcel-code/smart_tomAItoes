@@ -11,11 +11,11 @@ data:
     resize : [340,240]
     num_workers: 2
 model:
-    name: initialModel
+    name: DummyModel
     input_shape: [340,240]
 train:
     seed: None
-    epochs: 10
+    epochs: 1
     log_every_iter: 1
     eval_every_iter: 1
     loss: ProvidedLossTraining

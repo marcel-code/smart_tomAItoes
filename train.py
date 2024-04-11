@@ -14,7 +14,7 @@ from src.models import get_model
 from src.models.utils.losses import ProvidedLoss
 from src.settings import TRAINING_PATH
 
-## TODO SECTION
+# TODO SECTION
 
 # TODO Setting up evaluation pipeline
 # TODO moving get_* function to utils

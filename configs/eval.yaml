@@ -11,7 +11,7 @@ data:
     resize : [340,240]
     num_workers: 2
 model:
-    name: initialModel
+    name: DummyModel
     input_shape: [340,240]
 train:
     seed: None

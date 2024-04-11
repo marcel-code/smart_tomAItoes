@@ -36,7 +36,7 @@ class DummyModel(BaseModel):
 
         self.activation = torch.nn.ReLU()
         self.linear2 = torch.nn.Linear(200, 2)
-        self.softmax = torch.nn.Softmax()u
+        self.softmax = torch.nn.Softmax()
 
     def _forward(self, x):
         # Model Architecture
