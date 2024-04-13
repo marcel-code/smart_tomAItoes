@@ -16,6 +16,11 @@ class initialModel(BaseModel):
         pretrained_model.classifier = pretrained_model.classifier[:-1]
         self.backbone = pretrained_model
         self.backbone.requires_grad_(False)
+
+        self.head = ModelHead()
+
+        if conf.model.pretrained_model != "None":
+            self.load_model(conf.model.pretrained_model)
         try:
             # TODO Handling of input_shape via OmegaConf
             self.inputShape = conf.model.input_shape
@@ -28,14 +33,30 @@ class initialModel(BaseModel):
                 "Key conf.model.input_shape not included in config file! Change either config file or assign another value!"
             )
 
-        self.model = self._generate_model_layers()
-
         self.loss_fn = get_loss("src.models.utils.losses", torch.nn.Module, conf.train.loss)()
 
         # self.sigmoid_scaling = torch.Tensor()
         self.output = {}
 
-    def _generate_model_layers(self):
+    def _forward(self, x):
+        # Model Architecture
+        x = self.backbone(x)
+        x = self.head(x)
+        return x
+
+    def loss(self, pred, ground_truth):
+        return self.loss_fn(pred, ground_truth)
+
+    def load_model(self, state_dict):
+        self.head.load_state_dict(torch.load(state_dict))
+
+
+class ModelHead(torch.nn.Module):
+    def __init__(self):
+        super(ModelHead, self).__init__()
+
+        self.name = "ModelHead"
+
         self.flatten = torch.nn.Flatten()
         self.linear1 = torch.nn.Linear(4096, 200)
         self.linear2 = torch.nn.Linear(200, 4)
@@ -43,21 +64,13 @@ class initialModel(BaseModel):
         self.finalLayer = torch.nn.Linear(4, 4)
         self.sigmoid = torch.nn.Sigmoid()
 
-    def _forward(self, x):
-        # Model Architecture
-        x = self.backbone(x)
+    def forward(self, x):
+        # Final Layer output: 4 values (height, fw_plant, number of tomatoes, leaf_area)
         x = self.flatten(x)
         x = self.linear1(x)
         x = self.activation(x)
         x = self.linear2(x)
-        # x = self.activation(x)
-
-        # x = PreTrainedModel(x) # output: Low Level Feature
-        # Merkmale zu Layer y entnehmen ->
-        # ...
-        # Low Level Feature processing via top layers aka fully connected or whatever
-        # Final Layer output: 4 values (height, fw_plant, number of tomatoes, leaf_area)
         return x
 
-    def loss(self, pred, ground_truth):
-        return self.loss_fn(pred, ground_truth)
+    def loss(self):
+        raise NotImplementedError

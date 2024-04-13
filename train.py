@@ -244,7 +244,7 @@ def train(conf):
         writer.add_scalar("train/loss", avg_loss, epoch_number + 1)
         writer.add_scalar("train/lr", np.array(lr_scheduler.get_last_lr()), epoch_number + 1)
         writer.add_scalar("train/epoch", epoch_number + 1, epoch_number + 1)
-        writer.add_scalar("val/loss", avg_loss, epoch_number + 1)
+        writer.add_scalar("val/loss", avg_vloss, epoch_number + 1)
         writer.add_scalar("val/epoch", epoch_number + 1, epoch_number + 1)
         writer.flush()
 
@@ -257,7 +257,13 @@ def train(conf):
                 )
             )
             print(f"New best model saved at epoch {epoch_number}")
-            torch.save(model.state_dict(), model_path)
+            # model_state_dict = model.state_dict()
+            # for key in model_state_dict.keys():
+            #     model_state_dict.pop(key)
+            if "head" in dir(model):
+                torch.save(model.head.state_dict(), model_path)
+            else:
+                torch.save(model.state_dict(), model_path)
 
         # TODO Implementation of evaluation procedure
         # TODO Inclusion of additional metric to tensorboard and overview

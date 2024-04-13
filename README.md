@@ -51,6 +51,8 @@ For adding new setting values to the config file, make sure to add the according
 # Adding new model
 For adding a new model for the evaluation, add a new .py file including the new model. Make sure that the model inherits from torch.nn.Module Class, in order to be aligned with the dynamic model loader (get_model). Try to keep aligned with DummyModel regarding the structure.
 
+For preventing certain layers from training, just set the requires_grad argument to False.
+
 # Adding losses
 Adding custom loss to the src.models.utils.losses.py file. Dynamic loading by changing name in config file. Make sure to implement a Class for your specific loss.
 

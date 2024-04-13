@@ -9,11 +9,11 @@ data:
     grayscale: false
     resize : [340,240]
     num_workers: 5
-    test: false
+    test: true
 model:
     name: initialModel
     input_shape: [3,340,240]
-    pretrained_model: None
+    pretrained_model: C:\Users\Marcel\OneDrive - student.kit.edu\Dokumente\projects\Projects\smart_tomAItoes\outputs\training\RUN_\20240413_184433_model_initialModel_epoch_2
 train:
     seed: None
     epochs: 40

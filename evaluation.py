@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from src import logger
 from src.data.dataloader import TomatoDataset
+from src.models.initialModel import initialModel
 from src.settings import EVAL_PATH
 
 ## TODO SECTION
@@ -57,6 +58,8 @@ def evaluation(conf):
     data_loader = TomatoDataset(data_conf)
 
     test_loader = data_loader.get_data_loader("test")
+
+    model = initialModel(conf)
 
     for i, data in tqdm(enumerate(test_loader), desc="Evaluation"):
         inputs = data["rgb"]  # currently only gray values
