@@ -198,9 +198,7 @@ def train(conf):
     #     params = filter_parameters(params, conf.train.opt_regexp)
     all_params = [p for n, p in params]
 
-    lr_params = pack_lr_parameters(
-        params, conf.train.optimizer.lr, [(100, ["dampingnet.const"])]
-    )  # conf.train.lr_scaling)
+    lr_params = pack_lr_parameters(params, conf.train.lr, [(100, ["dampingnet.const"])])  # conf.train.lr_scaling)
     optimizer = optimizer_fn(lr_params, lr=conf.train.optimizer.lr, **conf.train.optimizer.optimizer_options)
     lr_scheduler = get_lr_scheduler(optimizer=optimizer, conf=conf.train.lr_schedule)
 

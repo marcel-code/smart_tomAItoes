@@ -15,6 +15,7 @@ class initialModel(BaseModel):
         pretrained_model = pretrained_models.vgg16(pretrained=True)
         pretrained_model.classifier = pretrained_model.classifier[:-1]
         self.backbone = pretrained_model
+        self.backbone.requires_grad_(False)
         try:
             # TODO Handling of input_shape via OmegaConf
             self.inputShape = conf.model.input_shape
