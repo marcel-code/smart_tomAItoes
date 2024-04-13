@@ -57,6 +57,15 @@ Adding custom loss to the src.models.utils.losses.py file. Dynamic loading by ch
 # Execute Training
 python train.py <Experimentname> --conf <path to config>
 
+# Tensorboard
+During or after training, you can open tensorboard to visualize the progress and changes in losses, learning rates and similar (defined in train.py with writer.add_scalar or similar).
+
+To activate tensorboard, run 
+```bash
+tensorboard --logdir=outputs --host=localhost --port=6007
+```
+
+I didn't get it working for opening the browser directly. However, you can either click on the local host link in your terminal (http://localhost:6007/) or copying the weblink directly into your preferred browser.
 
 ## Colab
 # Setup

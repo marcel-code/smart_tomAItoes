@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import torch
 from omegaconf import OmegaConf
 from torch.utils.tensorboard import SummaryWriter
@@ -32,6 +33,9 @@ from src.utils.misc import get_ground_truth_dict, get_ground_truth_tensor, get_o
 # TODO fix issue with batchsize = num:workers in yaml
 # TODO implementation of colab run - therefore: inclusion of all necessary packages, ...
 # TODO undo deletion of scaling of image in numpy to torch (load_image)
+# TODO only store non pre trained weights when using vgg or similar
+# TODO check if training is working -> are weights changing?
+
 # TODO LIST
 # TODO DAtaloader adaption
 # TODO Model adaption
@@ -243,10 +247,11 @@ def train(conf):
         print("LOSS train {} valid {}".format(avg_loss, avg_vloss))
 
         # Log the running loss averaged per batch
-        # for both training and validation
-        writer.add_scalars(
-            "Training vs. Validation Loss", {"Training": avg_loss, "Validation": avg_vloss}, epoch_number + 1
-        )
+        writer.add_scalar("train/loss", avg_loss, epoch_number + 1)
+        writer.add_scalar("train/lr", np.array(lr_scheduler.get_last_lr()), epoch_number + 1)
+        writer.add_scalar("train/epoch", epoch_number + 1, epoch_number + 1)
+        writer.add_scalar("val/loss", avg_loss, epoch_number + 1)
+        writer.add_scalar("val/epoch", epoch_number + 1, epoch_number + 1)
         writer.flush()
 
         # Track best performance, and save the model's state
