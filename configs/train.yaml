@@ -12,7 +12,7 @@ data:
     test: false
 model:
     name: initialModel
-    input_shape: [340,240]
+    input_shape: [3,340,240]
 train:
     seed: None
     epochs: 40
@@ -24,14 +24,13 @@ train:
         lr: 0.001
         optimizer_options:  # need to be added accordingly to optimizer
             momentum: 0.9
-    lr: 1e-4
+    lr: 5e-5
     lr_schedule:
         start: 20
         type: exp  # factor, exp, None
         on_epoch: true
-        exp_div_10: 10
+        exp_div_10: 2
 
 # TODO Selection of cloud or local computing
 # TODO include all necessary and remove all unnecessary settings
 # TODO include differentiatiation between training and evaluation
-# TODO implement lr scheduler

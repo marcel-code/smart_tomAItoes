@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from omegaconf import OmegaConf
 from torch.utils.tensorboard import SummaryWriter
+from torchsummary import summary
 from tqdm import tqdm
 
 from src import logger
@@ -23,24 +24,17 @@ from src.utils.misc import get_ground_truth_dict, get_ground_truth_tensor, get_o
 # TODO moving get_* function to utils
 # TODO implementation of evaluation
 # TODO Dataloader depth image inclusion
-# TODO Concept creation for model
-# TODO Tensorboard logging finalization
-# TODO Get tensorboard running
 # TODO Modell nach training abspeichern
-# TODO Learning scheduler integrieren und finalisieren
-# TODO Modell mit VGG als Backbone in initialModel integrieren
-# TODO InitialModel - Scaling of output to max ranges -> definition of max ranges based on provided data
 # TODO fix issue with batchsize = num:workers in yaml
 # TODO implementation of colab run - therefore: inclusion of all necessary packages, ...
 # TODO undo deletion of scaling of image in numpy to torch (load_image)
 # TODO only store non pre trained weights when using vgg or similar
-# TODO check if training is working -> are weights changing?
+# TODO restoring training and fine-tune or prolong training
+# TODO Check if backbone is trained aswell
 
 # TODO LIST
 # TODO DAtaloader adaption
 # TODO Model adaption
-# TODO Evaluation scipt
-# TODO Concept creation
 
 default_train_conf = {
     "seed": "???",  # training seed
@@ -189,8 +183,10 @@ def train(conf):
 
     # Dynamic loading of model (need to be defined in the model section (single .py for a model class))
     model = get_model(conf.model.name)(conf)
-    # model = DummyModel(conf)
-    # TODO optimizer dynamic load
+
+    # print model summary (layer, parameter, ...)
+    summary(model, tuple(conf.model.input_shape))
+
     optimizer_fn = {
         "sgd": torch.optim.SGD,
         "adam": torch.optim.Adam,

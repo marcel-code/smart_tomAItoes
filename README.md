@@ -54,6 +54,9 @@ For adding a new model for the evaluation, add a new .py file including the new 
 # Adding losses
 Adding custom loss to the src.models.utils.losses.py file. Dynamic loading by changing name in config file. Make sure to implement a Class for your specific loss.
 
+# Adding Optimizer
+For using another optimizer than SGD, you have to add the according arguments to the .yaml file - same style as already with lr and momentum for SGD. Otherwise, the dynamic selection will fail.
+
 # Execute Training
 python train.py <Experimentname> --conf <path to config>
 
