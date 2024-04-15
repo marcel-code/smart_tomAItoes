@@ -76,6 +76,7 @@ def get_output_dict(pred, data, key_list=["height", "fw_plant"]):
     return res_dict
 
 
+@torch.no_grad()  # Decorator to disable gradient calculation (no need to calculate gradients)
 def evaluation(conf):
     data_conf = copy.deepcopy(conf.data)
     print(data_conf)
