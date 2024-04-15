@@ -1,5 +1,7 @@
 import argparse
 import copy
+import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -48,7 +50,7 @@ def get_output_dict(
     for i in range(len(data["name"])):
         res[data["name"][i]] = {}
         for j in range(len(key_list)):
-            res[data["name"][i]][key_list[j]] = pred[i][j]
+            res[data["name"][i]][key_list[j]] = pred[i][j].item()
     return res
 
 
@@ -64,12 +66,34 @@ def evaluation(conf):
     model = initialModel(conf)
     model.load_model(conf.model.pretrained_model)
     model.eval()
+
+    pred_dict = {}
+    cnt = 0
     for i, data in tqdm(enumerate(test_loader), desc="Evaluation"):
+        if cnt > 5:
+            break
         inputs = data["rgb"]  # currently only gray values
-        print(model(inputs))
+        pred = model(inputs)
         print(np.array(model(inputs)[0]))
         # pred = model(xy) - Take model 20240407_030148_model_DummyModel_epoch_0 (should hopefully work). You need to
         # load the model class first (DummyModel in this case) and then add the weights stored in the mentioned file
+
+        output_dict = get_output_dict(pred, data)
+        print(output_dict)
+
+        # Append output_dict to pred_dict
+        for key, value in output_dict.items():
+            if key in pred_dict:
+                pred_dict[key].extend(value)
+            else:
+                pred_dict[key] = value
+        cnt = cnt + 1
+
+    # Write the results to the submission file
+    submission_file = os.path.join(EVAL_PATH, conf.experiment, "validation_submission.json")
+    os.makedirs(os.path.dirname(submission_file), exist_ok=True)
+    with open(submission_file, "w") as f:
+        json.dump(pred_dict, f, indent=4)
 
 
 if __name__ == "__main__":

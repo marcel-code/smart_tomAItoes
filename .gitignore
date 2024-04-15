@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 .vscode
 data/training/*
+data/validation/*
+
 outputs
 # C extensions
 *.so

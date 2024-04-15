@@ -70,6 +70,7 @@ class ModelHead(torch.nn.Module):
         x = self.linear1(x)
         x = self.activation(x)
         x = self.linear2(x)
+        x = self.activation(x)
         return x
 
     def loss(self):

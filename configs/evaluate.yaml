@@ -1,19 +1,19 @@
 data:
     name: tomatoes
-    data_dir: training
+    data_dir: validation
     image_dir: rgb
     depth_dir: depth
     train_size: 150
     val_size: 20
-    batch_size: 5
+    batch_size: 1
     grayscale: false
     resize : [340,240]
-    num_workers: 5
+    num_workers: 1
     test: true
 model:
     name: initialModel
     input_shape: [3,340,240]
-    pretrained_model: C:\Users\Marcel\OneDrive - student.kit.edu\Dokumente\projects\Projects\smart_tomAItoes\outputs\training\RUN_\20240413_184433_model_initialModel_epoch_2
+    pretrained_model: C:\Users\Marcel\OneDrive - student.kit.edu\Dokumente\projects\Projects\smart_tomAItoes\20240415_215838_model_initialModel_epoch_0
 train:
     seed: None
     epochs: 40
