@@ -3,6 +3,7 @@ import copy
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import torch
 from omegaconf import OmegaConf
 from tqdm import tqdm
@@ -51,6 +52,7 @@ def get_output_dict(
     return res
 
 
+@torch.no_grad
 def evaluation(conf):
     data_conf = copy.deepcopy(conf.data)
     print(data_conf)
@@ -60,10 +62,12 @@ def evaluation(conf):
     test_loader = data_loader.get_data_loader("test")
 
     model = initialModel(conf)
-
+    model.load_model(conf.model.pretrained_model)
+    model.eval()
     for i, data in tqdm(enumerate(test_loader), desc="Evaluation"):
         inputs = data["rgb"]  # currently only gray values
-        print(inputs)
+        print(model(inputs))
+        print(np.array(model(inputs)[0]))
         # pred = model(xy) - Take model 20240407_030148_model_DummyModel_epoch_0 (should hopefully work). You need to
         # load the model class first (DummyModel in this case) and then add the weights stored in the mentioned file
 
