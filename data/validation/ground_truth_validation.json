@@ -1,0 +1,236 @@
+{
+    "A_2e8a9508": {
+        "height": 29,
+        "fw_plant": 21.66,
+        "leaf_area": 420.79,
+        "number_of_red_fruits": 0
+    },
+    "C_2f89a7d3": {
+        "height": 22,
+        "fw_plant": 27.87,
+        "leaf_area": 326.28,
+        "number_of_red_fruits": 0
+    },
+    "C_552c2ad5": {
+        "height": 38.5,
+        "fw_plant": 219.55,
+        "leaf_area": 1351.06,
+        "number_of_red_fruits": 1
+    },
+    "C_6803e33c": {
+        "height": 22,
+        "fw_plant": 16.43,
+        "leaf_area": 273.46,
+        "number_of_red_fruits": 0
+    },
+    "B_d5dd84c8": {
+        "height": 37,
+        "fw_plant": 520.69,
+        "leaf_area": 2178.04,
+        "number_of_red_fruits": 15
+    },
+    "D_62bbeb72": {
+        "height": 29,
+        "fw_plant": 34.23,
+        "leaf_area": 529.49,
+        "number_of_red_fruits": 0
+    },
+    "C_35f49811": {
+        "height": 22,
+        "fw_plant": 18.08,
+        "leaf_area": 292.26,
+        "number_of_red_fruits": 0
+    },
+    "C_ed3f4b44": {
+        "height": 26,
+        "fw_plant": 51.82,
+        "leaf_area": 680.03,
+        "number_of_red_fruits": 0
+    },
+    "B_9540dd1c": {
+        "height": 32,
+        "fw_plant": 358.93,
+        "leaf_area": 1668.98,
+        "number_of_red_fruits": 15
+    },
+    "D_2e9fed08": {
+        "height": 50,
+        "fw_plant": 123.19,
+        "leaf_area": 1609.66,
+        "number_of_red_fruits": 0
+    },
+    "D_66a68e37": {
+        "height": 42,
+        "fw_plant": 315.73,
+        "leaf_area": 1542.06,
+        "number_of_red_fruits": 11
+    },
+    "A_84a429a3": {
+        "height": 23,
+        "fw_plant": 24.47,
+        "leaf_area": 485.77,
+        "number_of_red_fruits": 0
+    },
+    "C_64dc65d6": {
+        "height": 20.5,
+        "fw_plant": 13.72,
+        "leaf_area": 224.04,
+        "number_of_red_fruits": 0
+    },
+    "B_79fd8f75": {
+        "height": 25,
+        "fw_plant": 19.54,
+        "leaf_area": 321.93,
+        "number_of_red_fruits": 0
+    },
+    "C_9812c65b": {
+        "height": 28,
+        "fw_plant": 45.74,
+        "leaf_area": 664.03,
+        "number_of_red_fruits": 0
+    },
+    "B_b5993309": {
+        "height": 20,
+        "fw_plant": 67.44,
+        "leaf_area": 1104.87,
+        "number_of_red_fruits": 0
+    },
+    "D_ed842c62": {
+        "height": 28,
+        "fw_plant": 23.12,
+        "leaf_area": 402.77,
+        "number_of_red_fruits": 0
+    },
+    "C_64481f7b": {
+        "height": 32,
+        "fw_plant": 180.33,
+        "leaf_area": 971.42,
+        "number_of_red_fruits": 6
+    },
+    "A_4ef94853": {
+        "height": 28,
+        "fw_plant": 18.3,
+        "leaf_area": 386.64,
+        "number_of_red_fruits": 0
+    },
+    "C_684262c3": {
+        "height": 27,
+        "fw_plant": 308.38,
+        "leaf_area": 1059.43,
+        "number_of_red_fruits": 14
+    },
+    "D_0c08664b": {
+        "height": 28,
+        "fw_plant": 23.91,
+        "leaf_area": 383.9,
+        "number_of_red_fruits": 0
+    },
+    "D_28086b96": {
+        "height": 41,
+        "fw_plant": 71.59,
+        "leaf_area": 1024.34,
+        "number_of_red_fruits": 0
+    },
+    "B_5d41ea61": {
+        "height": 25,
+        "fw_plant": 53.16,
+        "leaf_area": 838.87,
+        "number_of_red_fruits": 0
+    },
+    "B_78e13271": {
+        "height": 45,
+        "fw_plant": 200.66,
+        "leaf_area": 2104.42,
+        "number_of_red_fruits": 0
+    },
+    "B_e2083674": {
+        "height": 41,
+        "fw_plant": 173.16,
+        "leaf_area": 2008.22,
+        "number_of_red_fruits": 0
+    },
+    "A_91a85891": {
+        "height": 23.5,
+        "fw_plant": 22.02,
+        "leaf_area": 451.96,
+        "number_of_red_fruits": 0
+    },
+    "B_2823be4a": {
+        "height": 37,
+        "fw_plant": 227.56,
+        "leaf_area": 1131.11,
+        "number_of_red_fruits": 13
+    },
+    "C_4eb2b695": {
+        "height": 41,
+        "fw_plant": 254,
+        "leaf_area": 1393.69,
+        "number_of_red_fruits": 3
+    },
+    "D_ae9f6b9d": {
+        "height": 49,
+        "fw_plant": 272.06,
+        "leaf_area": 1162.85,
+        "number_of_red_fruits": 9
+    },
+    "D_d02f02b5": {
+        "height": 44,
+        "fw_plant": 79.68,
+        "leaf_area": 1108.08,
+        "number_of_red_fruits": 0
+    },
+    "B_2501bf72": {
+        "height": 40,
+        "fw_plant": 170.16,
+        "leaf_area": 3613.15,
+        "number_of_red_fruits": 0
+    },
+    "B_c0db2442": {
+        "height": 10,
+        "fw_plant": 28.86,
+        "leaf_area": 545.67,
+        "number_of_red_fruits": 0
+    },
+    "D_cd09d14e": {
+        "height": 30,
+        "fw_plant": 31.03,
+        "leaf_area": 536.08,
+        "number_of_red_fruits": 0
+    },
+    "D_e2199f6b": {
+        "height": 48,
+        "fw_plant": 371.67,
+        "leaf_area": 1713.17,
+        "number_of_red_fruits": 27
+    },
+    "C_bb91f06d": {
+        "height": 19,
+        "fw_plant": 13.83,
+        "leaf_area": 238.06,
+        "number_of_red_fruits": 0
+    },
+    "C_0500a429": {
+        "height": 28,
+        "fw_plant": 27.57,
+        "leaf_area": 409.17,
+        "number_of_red_fruits": 0
+    },
+    "D_b968de8e": {
+        "height": 45,
+        "fw_plant": 134.89,
+        "leaf_area": 1703.91,
+        "number_of_red_fruits": 0
+    },
+    "B_a4a3a0f1": {
+        "height": 49,
+        "fw_plant": 563.5200000000001,
+        "leaf_area": 1631.53,
+        "number_of_red_fruits": 33
+    },
+    "B_b4ee891b": {
+        "height": 50,
+        "fw_plant": 172.28,
+        "leaf_area": 2302.37,
+        "number_of_red_fruits": 0
+    }
+}
