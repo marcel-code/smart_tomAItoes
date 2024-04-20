@@ -1,0 +1,3 @@
+[submodule "third_party/point-cloud-demo"]
+	path = third_party/point-cloud-demo
+	url = git@github.com:WURgreenhouse/point-cloud-demo.git
