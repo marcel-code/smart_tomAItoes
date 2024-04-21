@@ -54,10 +54,11 @@ def get_output_dict(
     return res
 
 
-@torch.no_grad
+# @torch.no_grad
 def evaluation(conf):
     data_conf = copy.deepcopy(conf.data)
     print(data_conf)
+    validation_dir = os.path.join(EVAL_PATH, conf.experiment)
 
     data_loader = TomatoDataset(data_conf)
 
@@ -74,7 +75,7 @@ def evaluation(conf):
             break
         inputs = data["rgb"]  # currently only gray values
         pred = model(inputs)
-        print(np.array(model(inputs)[0]))
+        # print(np.array(model(inputs)[0]))
         # pred = model(xy) - Take model 20240407_030148_model_DummyModel_epoch_0 (should hopefully work). You need to
         # load the model class first (DummyModel in this case) and then add the weights stored in the mentioned file
 

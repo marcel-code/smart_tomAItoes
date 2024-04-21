@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torchvision.models as pretrained_models
 from omegaconf.errors import ConfigAttributeError, ConfigKeyError
+from torchvision.models import VGG16_Weights, vgg16
 
 from ..utils.tools import get_loss
 from .baseModel import BaseModel
@@ -12,7 +13,7 @@ class initialModel(BaseModel):
     def _init(self, conf):
         self.name = "initialModel"
 
-        pretrained_model = pretrained_models.vgg16(pretrained=True)
+        pretrained_model = pretrained_models.vgg16(weights=VGG16_Weights.DEFAULT)
         pretrained_model.classifier = pretrained_model.classifier[:-1]
         self.backbone = pretrained_model
         self.backbone.requires_grad_(False)
