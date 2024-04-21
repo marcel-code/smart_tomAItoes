@@ -1,0 +1,37 @@
+data:
+    name: tomatoes
+    data_dir: training
+    image_dir: rgb
+    depth_dir: depth
+    train_size: 228
+    val_size: 40
+    batch_size: 8
+    grayscale: false
+    resize : [340,240]
+    num_workers: 8
+    test: false
+model:
+    name: initialModel_wDepth
+    input_shape: [3,340,240]
+    pretrained_model: None
+train:
+    seed: None
+    epochs: 150
+    log_every_iter: 1
+    eval_every_iter: 1
+    loss: ProvidedLossTraining
+    optimizer:
+        name: sgd  # adam, adamw, rmsprop
+        lr: 0.001
+        optimizer_options:  # need to be added accordingly to optimizer
+            momentum: 0.85
+    lr: 5e-5
+    lr_schedule:
+        start: 80
+        type: exp  # factor, exp, None
+        on_epoch: true
+        exp_div_10: 2
+
+# TODO Selection of cloud or local computing
+# TODO include all necessary and remove all unnecessary settings
+# TODO include differentiatiation between training and evaluation

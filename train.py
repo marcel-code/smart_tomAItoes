@@ -140,7 +140,10 @@ def train_one_epoch(epoch_index, training_loader, optimizer, model, num_batches=
     # index and do some intra-epoch reporting
     for i, data in tqdm(enumerate(training_loader), desc="Model Training"):
         # Every data instance is an input + label pair
-        inputs = data["rgb"]
+        if "Depth" in model.name:
+            inputs = [data["rgb"], data["depth"]]
+        else:
+            inputs = data["rgb"]
 
         # Zero your gradients for every batch!
         optimizer.zero_grad()
@@ -185,7 +188,7 @@ def train(conf):
     model = get_model(conf.model.name)(conf)
 
     # print model summary (layer, parameter, ...)
-    summary(model, tuple(conf.model.input_shape))
+    # summary(model, tuple(conf.model.input_shape))
 
     optimizer_fn = {
         "sgd": torch.optim.SGD,
@@ -232,7 +235,10 @@ def train(conf):
         # Disable gradient computation and reduce memory consumption.
         with torch.no_grad():
             for i, vdata in enumerate(val_loader):
-                vinputs, vlabels = vdata["rgb"], get_ground_truth_tensor(vdata)
+                if "Depth" in conf.model.name:
+                    vinputs, vlabels = [vdata["rgb"], vdata["depth"]], get_ground_truth_tensor(vdata)
+                else:
+                    vinputs, vlabels = vdata["rgb"], get_ground_truth_tensor(vdata)
                 voutputs = model(vinputs)
                 vloss = model.loss(voutputs, vlabels)
                 running_vloss += vloss

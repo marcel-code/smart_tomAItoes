@@ -44,6 +44,9 @@ conda env export > filename.yaml
 # Including dataset into local environment
 Add image dataset into local data folder
 
+# Pointcloud Generation for depth image
+Submodule point-cloud-demo from university wagening as thrid party provider included. Takes two images and camera instrinsics in order to calculate point cloud. Look at the demo for more details.
+
 ## Usage of pipeline
 # Adding new features to config file
 For adding new setting values to the config file, make sure to add the according value to the dataloader (TomatoDataset - default_config)

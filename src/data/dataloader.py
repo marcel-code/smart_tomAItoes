@@ -20,6 +20,7 @@ from omegaconf import OmegaConf
 from tqdm import tqdm
 
 from ..settings import DATA_PATH
+from ..utils.depth import PointCloud
 from ..utils.image import numpy_image_to_torch, read_image
 from ..utils.tools import fork_rng
 from .base_dataset import BaseDataset
@@ -50,6 +51,9 @@ class TomatoDataset(BaseDataset):
 
     def _init(self, conf):
         data_dir = DATA_PATH / conf.data_dir
+
+        self.pcloud = PointCloud(DATA_PATH / conf.data_dir / "oak-d-s2-poe_conf.json")
+
         if not data_dir.exists():
             raise FileNotFoundError(data_dir)
         else:
@@ -78,13 +82,13 @@ class TomatoDataset(BaseDataset):
             self.ground_truth = {}
 
     def get_dataset(self, split):
-        return _Dataset(self.conf, self.images[split], split, self.ground_truth)
+        return _Dataset(self.conf, self.images[split], split, self.ground_truth, self.pcloud)
 
 
 class _Dataset(torch.utils.data.Dataset):
     dataset = 0
 
-    def __init__(self, conf, image_names, split, ground_truth):
+    def __init__(self, conf, image_names, split, ground_truth, pcloud):
         self.conf = conf
         self.split = split
         self.image_names = np.array(image_names)
@@ -93,6 +97,7 @@ class _Dataset(torch.utils.data.Dataset):
         self.grayscale = conf.grayscale
         self.resize = conf.resize
         self.ground_truth = ground_truth
+        self.pcloud = pcloud
 
         _Dataset.dataset = _Dataset.dataset + 1
 
@@ -130,7 +135,9 @@ class _Dataset(torch.utils.data.Dataset):
         _type_
             _description_
         """
-        return img
+        pointcloud = self.pcloud.convert_depth_to_point_array(depth_img=img)
+        depth = torch.asarray(max(pointcloud[:, 2]), dtype=torch.float32).reshape((1))
+        return depth
 
     def getitem(self, idx):
         name = self.image_names[idx].split(".")[0]
@@ -138,7 +145,7 @@ class _Dataset(torch.utils.data.Dataset):
         # Read all images
         # TODO read_image to load_image + grayscale inclusion
         img_rgb = read_image(self.image_dir / f"{name}.png", self.grayscale)
-        # img_depth = read_image(self.depth_dir / f"{name}_depth.png")
+        img_depth = cv2.imread(str(self.depth_dir / f"{name}_depth.png"), cv2.IMREAD_UNCHANGED)
         # img_irL = read_image(self.depth_dir / f"{name}_irL.png")
         # img_irR = read_image(self.depth_dir / f"{name}_irR.png")
 
@@ -147,12 +154,13 @@ class _Dataset(torch.utils.data.Dataset):
         size = img_rgb.shape[:2][::-1]
 
         img_rgb = self._preprocess_rgb_data(img_rgb)
+        depth = self._preprocess_depth_data(img_depth)
 
         # TODO read target values
         data = {
             "name": name,
             "rgb": img_rgb,
-            # "depth": img_depth,
+            "depth": depth,
             # "irL": img_irL,
             # "irR": img_irR,
             # "idx": idx,
