@@ -71,8 +71,6 @@ def evaluation(conf):
     pred_dict = {}
     cnt = 0
     for i, data in tqdm(enumerate(test_loader), desc="Evaluation"):
-        if cnt > 5:
-            break
         inputs = data["rgb"]  # currently only gray values
         pred = model(inputs)
         # print(np.array(model(inputs)[0]))
@@ -88,7 +86,6 @@ def evaluation(conf):
                 pred_dict[key].extend(value)
             else:
                 pred_dict[key] = value
-        cnt = cnt + 1
 
     # Write the results to the submission file
     submission_file = os.path.join(EVAL_PATH, conf.experiment, "validation_submission.json")
