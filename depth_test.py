@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib.colors import rgb_to_hsv
 
 from src.settings import DATA_PATH
-from src.utils.depth import PointCloudCreator
+from src.utils.depth import PointCloud
 
 # point to the image files
 image = "D_b14ffae7"  # B_93dd57ad B_0328ab97 A_1a111b40 D_b14ffae7
@@ -54,7 +54,7 @@ with open(base_dir / "ground_truth_train.json", "r") as f:
 depth = cropped_depth_img
 
 # init a point cloud creator with the camera configuration
-point_cloud_creator = PointCloudCreator(conf_file=base_dir / "oak-d-s2-poe_conf.json", logger_level=100)
+point_cloud_creator = PointCloud(conf_file=base_dir / "oak-d-s2-poe_conf.json", logger_level=100)
 
 files = [x.split(".")[0] for x in os.listdir(base_dir / "rgb") if ".png" in x]
 for image in files:
