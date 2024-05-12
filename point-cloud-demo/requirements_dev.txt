@@ -1,8 +1,0 @@
-bumpversion
-flake8
-pre-commit
-pytest
-black
-isort
-jupyter
-matplotlib
