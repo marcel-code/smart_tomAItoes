@@ -3,12 +3,13 @@ data:
     data_dir: training
     image_dir: rgb
     depth_dir: depth
+    depth_prep_dir: preprocessed_depth
     train_size: 228
     val_size: 40
     batch_size: 8
     grayscale: false
     resize : [340,240]
-    num_workers: 8
+    num_workers: 1
     test: false
 model:
     name: initialModel_wDepth

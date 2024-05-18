@@ -19,13 +19,25 @@ import torch
 from omegaconf import OmegaConf
 from tqdm import tqdm
 
+from point_cloud_demo.scripts.pointcloud_tools import PointCloudCreator
+
 from ..settings import DATA_PATH
-from ..utils.depth import PointCloud
 from ..utils.image import numpy_image_to_torch, read_image
-from ..utils.tools import fork_rng
 from .base_dataset import BaseDataset
 
 logger = logging.getLogger(__name__)
+
+SUBSTRATE_LEVEL = {
+    "A": 0.1,
+    "B": 0.07,
+    "D": 0.1,
+    "C": 0.1,
+}
+
+GROUND_LEVEL = -1.3
+MIN_FREQUENCY_PCLOUD_POINTS = 20
+NUM_BINS = 300
+EST_GROUND_LEVEL = 1.148
 
 
 class TomatoDataset(BaseDataset):
@@ -34,6 +46,7 @@ class TomatoDataset(BaseDataset):
         "data_dir": "training",  # the top-level directory
         "image_dir": "rgb/",  # the subdirectory with the images
         "depth_dir": None,
+        "depth_prep_dir": "depth_prep_dir",
         "image_list": "revisitop1m.txt",  # optional: list or filename of list
         "input_shape": [256, 256, 3],
         "resize": [340, 240],
@@ -46,13 +59,13 @@ class TomatoDataset(BaseDataset):
         # image loading
         "grayscale": False,
         "reseed": False,
-        "num_workers": 2,
+        "num_workers": 1,
     }
 
     def _init(self, conf):
         data_dir = DATA_PATH / conf.data_dir
 
-        self.pcloud = PointCloud(DATA_PATH / conf.data_dir / "oak-d-s2-poe_conf.json")
+        self.pcloud = DATA_PATH / conf.data_dir / "oak-d-s2-poe_conf.json"
 
         if not data_dir.exists():
             raise FileNotFoundError(data_dir)
@@ -94,10 +107,16 @@ class _Dataset(torch.utils.data.Dataset):
         self.image_names = np.array(image_names)
         self.image_dir = DATA_PATH / conf.data_dir / conf.image_dir
         self.depth_dir = DATA_PATH / conf.data_dir / conf.depth_dir
+        self.depth_prep_dir = DATA_PATH / conf.data_dir / conf.depth_prep_dir
         self.grayscale = conf.grayscale
         self.resize = conf.resize
-        self.ground_truth = ground_truth
         self.pcloud = pcloud
+        self.ground_truth = ground_truth
+
+        # Either create preprocessed depth folder or read all depth data file names
+        if not os.path.isdir(self.depth_prep_dir):
+            os.mkdir(self.depth_prep_dir)
+            print("Preprocessed depth folder created.")
 
         _Dataset.dataset = _Dataset.dataset + 1
 
@@ -122,7 +141,7 @@ class _Dataset(torch.utils.data.Dataset):
         img = cv2.resize(img, self.resize, interpolation=cv2.INTER_AREA)
         return numpy_image_to_torch(img)
 
-    def _preprocess_depth_data(self, img):
+    def _preprocess_depth_data(self, img, name, depth=torch.tensor([0])):
         """Preprocess Depth data including
 
         Parameters
@@ -135,8 +154,36 @@ class _Dataset(torch.utils.data.Dataset):
         _type_
             _description_
         """
-        pointcloud = self.pcloud.convert_depth_to_point_array(depth_img=img)
-        depth = torch.asarray(max(pointcloud[:, 2]), dtype=torch.float32).reshape((1))
+        img_path = str(self.image_dir / f"{name}.png")
+        depth_path = str(self.depth_dir / f"{name}_depth.png")
+
+        pcloud = PointCloudCreator(self.pcloud, logger_level=100)
+        pcloud_arr = pcloud.convert_depth_to_pcd(img_path, depth_path)
+
+        # Extract points and colors
+        points = np.asarray(pcloud_arr.points)
+        z = -points[range(0, len(points), 100), 2]
+        z_ground_filtered = z[z > GROUND_LEVEL]
+
+        freq, bins = np.histogram(z_ground_filtered, bins=NUM_BINS)
+
+        mask = freq > MIN_FREQUENCY_PCLOUD_POINTS
+        freq = freq[mask]
+        bins = bins[:-1][mask]
+
+        ground_y = np.argmax(freq)  # indize of the most frequent value
+        plant_height = np.max(bins) - bins[np.argmax(freq)] - SUBSTRATE_LEVEL[name[0]]
+        plant_height = np.max(bins) + EST_GROUND_LEVEL - SUBSTRATE_LEVEL[name[0]]
+        # plt.hist(z_ground_filtered, bins=500)
+        # plt.show()
+
+        print(f"Ground level idx: {np.argmax(freq)}")
+        print(f"Ground level: {bins[ground_y]}")
+        print(f"Plant top0: {np.max(bins)}")
+        print(f"Plant height: {plant_height}")
+        with open(f"{self.depth_prep_dir}/{name}.txt", "w") as f:
+            f.write(str(plant_height))
+        print(f"Preprocessing for depth of {name} stored in according file.")
         return depth
 
     def getitem(self, idx):
@@ -154,7 +201,12 @@ class _Dataset(torch.utils.data.Dataset):
         size = img_rgb.shape[:2][::-1]
 
         img_rgb = self._preprocess_rgb_data(img_rgb)
-        depth = self._preprocess_depth_data(img_depth)
+
+        if f"{name}.txt" in os.listdir(self.depth_prep_dir):
+            with open(f"{self.depth_prep_dir}/{name}.txt", "rb") as f:
+                depth = float(f.readline())
+        else:
+            depth = self._preprocess_depth_data(img_depth, name)
 
         # TODO read target values
         data = {

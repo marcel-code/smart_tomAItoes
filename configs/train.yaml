@@ -3,12 +3,12 @@ data:
     data_dir: training
     image_dir: rgb
     depth_dir: depth
-    train_size: 150
-    val_size: 20
-    batch_size: 5
+    train_size: 228
+    val_size: 40
+    batch_size: 8
     grayscale: false
     resize : [340,240]
-    num_workers: 5
+    num_workers: 8
     test: false
 model:
     name: initialModel
@@ -16,7 +16,7 @@ model:
     pretrained_model: None
 train:
     seed: None
-    epochs: 40
+    epochs: 150
     log_every_iter: 1
     eval_every_iter: 1
     loss: ProvidedLossTraining
@@ -24,10 +24,10 @@ train:
         name: sgd  # adam, adamw, rmsprop
         lr: 0.001
         optimizer_options:  # need to be added accordingly to optimizer
-            momentum: 0.9
+            momentum: 0.85
     lr: 5e-5
     lr_schedule:
-        start: 20
+        start: 80
         type: exp  # factor, exp, None
         on_epoch: true
         exp_div_10: 2
