@@ -19,22 +19,34 @@ import torch
 from omegaconf import OmegaConf
 from tqdm import tqdm
 
-from point_cloud_demo.scripts.pointcloud_tools import PointCloudCreator
-
 from ..settings import DATA_PATH
 from ..utils.image import numpy_image_to_torch, read_image
 from .base_dataset import BaseDataset
+from .pointcloud_tools import PointCloudCreator
 
 logger = logging.getLogger(__name__)
 
-SUBSTRATE_LEVEL = {
+POT_HEIGHT = {
     "A": 0.1,
     "B": 0.07,
     "D": 0.1,
     "C": 0.1,
 }
+SUBSTRATE_HIGH = {  # if base ground (orange) is measure at -1.15
+    "A": 0.0,
+    "B": 0.075,
+    "C": 0.025,
+    "D": 0.0,
+}
 
-GROUND_LEVEL = -1.3
+SUBSTRATE_LOW = {  # if base ground (orange) is measure at -1.35
+    "A": 0.0,
+    "B": 0.065,
+    "C": 0.013,
+    "D": 0.0,
+}
+GROUND_LEVEL_MIN = -1.4
+GROUND_LEVEL_MAX = -1.1
 MIN_FREQUENCY_PCLOUD_POINTS = 20
 NUM_BINS = 300
 EST_GROUND_LEVEL = 1.148
@@ -163,23 +175,37 @@ class _Dataset(torch.utils.data.Dataset):
         # Extract points and colors
         points = np.asarray(pcloud_arr.points)
         z = -points[range(0, len(points), 100), 2]
-        z_ground_filtered = z[z > GROUND_LEVEL]
+        z_ground_filtered = z[z > GROUND_LEVEL_MIN]
 
+        # Extract plant top level
         freq, bins = np.histogram(z_ground_filtered, bins=NUM_BINS)
 
         mask = freq > MIN_FREQUENCY_PCLOUD_POINTS
         freq = freq[mask]
         bins = bins[:-1][mask]
 
-        ground_y = np.argmax(freq)  # indize of the most frequent value
-        plant_height = np.max(bins) - bins[np.argmax(freq)] - SUBSTRATE_LEVEL[name[0]]
-        plant_height = np.max(bins) + EST_GROUND_LEVEL - SUBSTRATE_LEVEL[name[0]]
-        # plt.hist(z_ground_filtered, bins=500)
-        # plt.show()
+        plant_top = np.max(bins)
 
-        print(f"Ground level idx: {np.argmax(freq)}")
-        print(f"Ground level: {bins[ground_y]}")
-        print(f"Plant top0: {np.max(bins)}")
+        # Make sure we only have real ground points
+        z_only_ground = z_ground_filtered[z_ground_filtered < GROUND_LEVEL_MAX]
+
+        # Extract ground level
+        freq_2, bins_2 = np.histogram(z_only_ground, bins=NUM_BINS)
+
+        ground_bin = np.argmax(freq_2)  # indize of the most frequent value
+        ground_value = bins_2[ground_bin]  # most frequent value
+
+        if ground_value < -1.25:
+            substrat = SUBSTRATE_LOW[name[0]]
+        else:
+            substrat = SUBSTRATE_HIGH[name[0]]
+
+        # Calculate plant height
+        plant_height = plant_top - ground_value - POT_HEIGHT[name[0]] - substrat
+
+        print(f"Ground level idx: {np.argmax(freq_2)}")
+        print(f"Ground level value: {bins_2[ground_bin]}")
+        print(f"Plant top: {np.max(bins)}")
         print(f"Plant height: {plant_height}")
         with open(f"{self.depth_prep_dir}/{name}.txt", "w") as f:
             f.write(str(plant_height))

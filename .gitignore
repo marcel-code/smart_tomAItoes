@@ -8,6 +8,7 @@ data/validation/*
 outputs
 venv_tomato
 venv_tomato_2
+point_cloud_demo/data/*
 # C extensions
 *.so
 
