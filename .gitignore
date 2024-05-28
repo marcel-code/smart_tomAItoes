@@ -9,6 +9,7 @@ outputs
 venv_tomato
 venv_tomato_2
 point-cloud-demo/data/*
+point_cloud_demo/data/*
 # C extensions
 *.so
 
