@@ -32,14 +32,14 @@ POT_HEIGHT = {
     "D": 0.1,
     "C": 0.1,
 }
-SUBSTRATE_HIGH = {  # if base ground (orange) is measure at -1.15
+SUBSTRATE_HIGH = {  # if base ground (orange) is measured at -1.15
     "A": 0.0,
     "B": 0.075,
     "C": 0.025,
     "D": 0.0,
 }
 
-SUBSTRATE_LOW = {  # if base ground (orange) is measure at -1.35
+SUBSTRATE_LOW = {  # if base ground (orange) is measured at -1.35
     "A": 0.0,
     "B": 0.065,
     "C": 0.013,
@@ -210,7 +210,9 @@ class _Dataset(torch.utils.data.Dataset):
         with open(f"{self.depth_prep_dir}/{name}.txt", "w") as f:
             f.write(str(plant_height))
         print(f"Preprocessing for depth of {name} stored in according file.")
-        return depth
+        plant_height = torch.tensor(plant_height)
+        plant_height = plant_height.reshape((1, -1))
+        return plant_height
 
     def getitem(self, idx):
         name = self.image_names[idx].split(".")[0]
@@ -233,6 +235,8 @@ class _Dataset(torch.utils.data.Dataset):
                 depth = float(f.readline())
         else:
             depth = self._preprocess_depth_data(img_depth, name)
+
+        depth = torch.tensor([depth], dtype=torch.float32)
 
         # TODO read target values
         data = {
