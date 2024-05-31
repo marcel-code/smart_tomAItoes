@@ -4,8 +4,8 @@ import os
 from src.models.utils.losses import ProvidedLoss
 from src.settings import DATA_PATH, EVAL_PATH
 
-folder = "validation"
-experiment = "train_w_gt"
+folder = "validation2"
+experiment = "test1"
 
 # get file paths
 pred_path = os.path.join(EVAL_PATH, experiment, "validation_submission.json")

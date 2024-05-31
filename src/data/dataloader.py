@@ -32,14 +32,14 @@ POT_HEIGHT = {
     "D": 0.1,
     "C": 0.1,
 }
-SUBSTRATE_HIGH = {  # if base ground (orange) is measured at -1.15
+SUBSTRATE_HIGH = {  # if base ground (orange) is measure at -1.15
     "A": 0.0,
     "B": 0.075,
     "C": 0.025,
     "D": 0.0,
 }
 
-SUBSTRATE_LOW = {  # if base ground (orange) is measured at -1.35
+SUBSTRATE_LOW = {  # if base ground (orange) is measure at -1.35
     "A": 0.0,
     "B": 0.065,
     "C": 0.013,
@@ -72,12 +72,14 @@ class TomatoDataset(BaseDataset):
         "grayscale": False,
         "reseed": False,
         "num_workers": 1,
+        "use_gt": False,
     }
 
     def _init(self, conf):
         data_dir = DATA_PATH / conf.data_dir
 
         self.pcloud = DATA_PATH / conf.data_dir / "oak-d-s2-poe_conf.json"
+        self.use_gt = conf.use_gt
 
         if not data_dir.exists():
             raise FileNotFoundError(data_dir)
@@ -107,13 +109,13 @@ class TomatoDataset(BaseDataset):
             self.ground_truth = {}
 
     def get_dataset(self, split):
-        return _Dataset(self.conf, self.images[split], split, self.ground_truth, self.pcloud)
+        return _Dataset(self.conf, self.images[split], split, self.ground_truth, self.pcloud, self.use_gt)
 
 
 class _Dataset(torch.utils.data.Dataset):
     dataset = 0
 
-    def __init__(self, conf, image_names, split, ground_truth, pcloud):
+    def __init__(self, conf, image_names, split, ground_truth, pcloud, use_gt):
         self.conf = conf
         self.split = split
         self.image_names = np.array(image_names)
@@ -124,6 +126,7 @@ class _Dataset(torch.utils.data.Dataset):
         self.resize = conf.resize
         self.pcloud = pcloud
         self.ground_truth = ground_truth
+        self.use_gt = use_gt
 
         # Either create preprocessed depth folder or read all depth data file names
         if not os.path.isdir(self.depth_prep_dir):
@@ -153,7 +156,7 @@ class _Dataset(torch.utils.data.Dataset):
         img = cv2.resize(img, self.resize, interpolation=cv2.INTER_AREA)
         return numpy_image_to_torch(img)
 
-    def _preprocess_depth_data(self, img, name, depth=torch.tensor([0])):
+    def _preprocess_depth_data(self, img, name, plant_height=torch.tensor([0])):
         """Preprocess Depth data including
 
         Parameters
@@ -210,8 +213,6 @@ class _Dataset(torch.utils.data.Dataset):
         with open(f"{self.depth_prep_dir}/{name}.txt", "w") as f:
             f.write(str(plant_height))
         print(f"Preprocessing for depth of {name} stored in according file.")
-        plant_height = torch.tensor(plant_height)
-        plant_height = plant_height.reshape((1, -1))
         return plant_height
 
     def getitem(self, idx):
@@ -230,8 +231,11 @@ class _Dataset(torch.utils.data.Dataset):
 
         img_rgb = self._preprocess_rgb_data(img_rgb)
 
-        if f"{name}.txt" in os.listdir(self.depth_prep_dir):
+        if self.use_gt:  # use ground truth depth for training
+            depth = self.ground_truth[name]["height"]
+        elif f"{name}.txt" in os.listdir(self.depth_prep_dir):
             with open(f"{self.depth_prep_dir}/{name}.txt", "rb") as f:
+                print(f"Loading previously proceseed depth of {name} stored in according file.")
                 depth = float(f.readline())
         else:
             depth = self._preprocess_depth_data(img_depth, name)

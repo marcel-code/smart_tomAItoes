@@ -59,8 +59,9 @@ class ModelHead(torch.nn.Module):
         self.name = "ModelHead"
 
         self.flatten = torch.nn.Flatten()
-        self.linear1 = torch.nn.Linear(4096, 200)
-        self.linear2 = torch.nn.Linear(200, 12)
+        self.linear1 = torch.nn.Linear(4096, 12)
+        # self.linear2 = torch.nn.Linear(200, 12)
+        self.dropout = torch.nn.Dropout(0.3)
         self.activation_ReLu = torch.nn.ReLU()
         self.finalLayer = torch.nn.Linear(12 + 1, 3)
         self.sigmoid = torch.nn.Sigmoid()
@@ -69,12 +70,21 @@ class ModelHead(torch.nn.Module):
         # Final Layer output: 4 values (height, fw_plant, number of tomatoes, leaf_area)
         x = self.flatten(x)
         x = self.linear1(x)
+        x = self.dropout(x)
         x = self.activation_ReLu(x)
-        x = self.linear2(x)
-        x = self.activation_ReLu(x)
+        # x = self.linear2(x)
+        # x = self.activation_ReLu(x)
+
+        # x = torch.cat((x, d), dim=1)
+
+        # x = self.finalLayer(x)
+        # x = self.activation_ReLu(x)
+
         x = torch.cat((x, d), dim=1)
+
         x = self.finalLayer(x)
         x = self.activation_ReLu(x)
+        x = torch.cat((x, d), dim=1)
         return x
 
     def loss(self):

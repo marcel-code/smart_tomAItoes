@@ -11,6 +11,7 @@ data:
     resize : [340,240]
     num_workers: 1
     test: false
+    use_gt: True
 model:
     name: initialModel_wDepth
     input_shape: [3,340,240]
@@ -26,12 +27,12 @@ train:
         lr: 0.001
         optimizer_options:  # need to be added accordingly to optimizer
             momentum: 0.85
-    lr: 5e-5
+    lr: 1e-3
     lr_schedule:
-        start: 80
+        start: 60
         type: exp  # factor, exp, None
         on_epoch: true
-        exp_div_10: 2
+        exp_div_10: 10
 
 # TODO Selection of cloud or local computing
 # TODO include all necessary and remove all unnecessary settings

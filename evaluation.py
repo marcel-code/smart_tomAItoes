@@ -12,7 +12,8 @@ from tqdm import tqdm
 
 from src import logger
 from src.data.dataloader import TomatoDataset
-from src.models.initialModel import initialModel
+
+# from src.models.initialModel import initialModel
 from src.settings import EVAL_PATH
 
 ## TODO SECTION
@@ -64,6 +65,13 @@ def evaluation(conf):
 
     test_loader = data_loader.get_data_loader("test")
 
+    if "Depth" in conf.model.pretrained_model:
+
+        from src.models.initialModel_wDepth import initialModel
+    else:
+
+        from src.models.initialModel import initialModel
+
     model = initialModel(conf)
     model.load_model(conf.model.pretrained_model)
     model.eval()
@@ -71,7 +79,14 @@ def evaluation(conf):
     pred_dict = {}
     cnt = 0
     for i, data in tqdm(enumerate(test_loader), desc="Evaluation"):
-        inputs = data["rgb"]  # currently only gray values
+        if "Depth" in model.name:
+            inputs = [data["rgb"], data["depth"]]
+
+            from src.models.initialModel_wDepth import initialModel
+        else:
+            inputs = data["rgb"]
+
+            from src.models.initialModel import initialModel
         pred = model(inputs)
         # print(np.array(model(inputs)[0]))
         # pred = model(xy) - Take model 20240407_030148_model_DummyModel_epoch_0 (should hopefully work). You need to

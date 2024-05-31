@@ -118,6 +118,7 @@ class BaseDataset(metaclass=ABCMeta):
         "num_threads": 1,
         "seed": 0,
         "prefetch_factor": 2,
+        "use_gt": False,
     }
     default_conf = {}
 

@@ -44,7 +44,7 @@ class ProvidedLossTraining(torch.nn.Module):
         # TODO Handling nans!
         traits = pred.size(1)
         error = 0
-        for trait in range(traits):  # Iterate over traits
+        for trait in range(traits - 1):  # Iterate over traits
             diff = ((pred[:, trait] - truth[:, trait]) / (truth[:, trait] + 1)) ** 2
             error += torch.sqrt(torch.nanmean(diff))
 

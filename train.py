@@ -1,5 +1,6 @@
 import argparse
 import copy
+import os
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -69,6 +70,7 @@ default_train_conf = {
     "pr_curves": {},
     "plot": None,
     "submodules": [],
+    "restore": False,
 }
 
 
@@ -152,7 +154,7 @@ def train_one_epoch(epoch_index, training_loader, optimizer, model, num_batches=
         outputs = model(inputs)
 
         # post-process data for loss calc
-        ground_truth = get_ground_truth_tensor(data)
+        ground_truth = get_ground_truth_tensor(data, ["fw_plant", "leaf_area", "number_of_red_fruits", "height"])
 
         # Compute the loss and its gradients
         loss = model.loss(outputs, ground_truth)
@@ -186,6 +188,19 @@ def train(conf):
 
     # Dynamic loading of model (need to be defined in the model section (single .py for a model class))
     model = get_model(conf.model.name)(conf)
+
+    if conf.restore:
+        if os.path.exists(os.path.join("outputs", "training", conf.experiment)):
+            eperiments = []
+            files = os.listdir(os.path.join("outputs", "training", conf.experiment))
+            experiments = [name for name in files if "epoch" in name]
+            if len(experiments) > 0:
+                experiments = sorted(experiments)
+                path = os.path.join("outputs", "training", conf.experiment, experiments[-1])
+                model.load_model(path)
+                print("Model ", path, " loaded")
+            else:
+                print("No pretrained model available")
 
     # print model summary (layer, parameter, ...)
     # summary(model, tuple(conf.model.input_shape))
@@ -236,9 +251,13 @@ def train(conf):
         with torch.no_grad():
             for i, vdata in enumerate(val_loader):
                 if "Depth" in conf.model.name:
-                    vinputs, vlabels = [vdata["rgb"], vdata["depth"]], get_ground_truth_tensor(vdata)
+                    vinputs, vlabels = [vdata["rgb"], vdata["depth"]], get_ground_truth_tensor(
+                        vdata, ["fw_plant", "leaf_area", "number_of_red_fruits", "height"]
+                    )
                 else:
-                    vinputs, vlabels = vdata["rgb"], get_ground_truth_tensor(vdata)
+                    vinputs, vlabels = vdata["rgb"], get_ground_truth_tensor(
+                        vdata, ["fw_plant", "leaf_area", "number_of_red_fruits", "height"]
+                    )
                 voutputs = model(vinputs)
                 vloss = model.loss(voutputs, vlabels)
                 running_vloss += vloss
@@ -317,5 +336,6 @@ if __name__ == "__main__":
         conf.train.seed = torch.initial_seed() & (2**32 - 1)
     OmegaConf.save(conf, str(output_dir / "config.yaml"))
     conf.experiment = args.experiment
+    conf.restore = args.restore
 
     train(conf)
