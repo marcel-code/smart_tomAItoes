@@ -1,0 +1,40 @@
+data:
+  name: tomatoes
+  data_dir: training
+  image_dir: rgb
+  depth_dir: depth
+  depth_prep_dir: preprocessed_depth
+  train_size: 228
+  val_size: 40
+  batch_size: 8
+  grayscale: false
+  resize:
+  - 340
+  - 240
+  num_workers: 1
+  test: false
+  use_gt: true
+model:
+  name: initialModel_wDepth
+  input_shape:
+  - 3
+  - 340
+  - 240
+  pretrained_model: None
+train:
+  seed: None
+  epochs: 150
+  log_every_iter: 1
+  eval_every_iter: 1
+  loss: ProvidedLossTraining
+  optimizer:
+    name: sgd
+    lr: 0.001
+    optimizer_options:
+      momentum: 0.85
+  lr: 0.05
+  lr_schedule:
+    start: 60
+    type: exp
+    on_epoch: true
+    exp_div_10: 10
