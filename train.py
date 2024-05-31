@@ -141,7 +141,7 @@ def train_one_epoch(epoch_index, training_loader, optimizer, model, num_batches=
     for i, data in tqdm(enumerate(training_loader), desc="Model Training"):
         # Every data instance is an input + label pair
         if "Depth" in model.name:
-            inputs = [data["rgb"], data["depth"]]
+            inputs = [data["rgb"], data["depth"], data["depth_img"]]
         else:
             inputs = data["rgb"]
 

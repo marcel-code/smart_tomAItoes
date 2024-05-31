@@ -20,6 +20,7 @@ from omegaconf import OmegaConf
 from tqdm import tqdm
 
 from ..settings import DATA_PATH
+from ..utils.depth import PointCloud
 from ..utils.image import numpy_image_to_torch, read_image
 from .base_dataset import BaseDataset
 from .pointcloud_tools import PointCloudCreator
@@ -154,7 +155,7 @@ class _Dataset(torch.utils.data.Dataset):
         return numpy_image_to_torch(img)
 
     def _preprocess_depth_data(self, img, name, depth=torch.tensor([0])):
-        """Preprocess Depth data including
+        """Preprocess Depth data for plant height estimation
 
         Parameters
         ----------
@@ -174,6 +175,7 @@ class _Dataset(torch.utils.data.Dataset):
 
         # Extract points and colors
         points = np.asarray(pcloud_arr.points)
+        print(points.shape)
         z = -points[range(0, len(points), 100), 2]
         z_ground_filtered = z[z > GROUND_LEVEL_MIN]
 
@@ -212,7 +214,30 @@ class _Dataset(torch.utils.data.Dataset):
         print(f"Preprocessing for depth of {name} stored in according file.")
         plant_height = torch.tensor(plant_height)
         plant_height = plant_height.reshape((1, -1))
-        return plant_height
+
+        points_resized = np.resize(points, (5000000, points.shape[1]))
+
+        return plant_height, points_resized
+
+    def _preprocess_depth_img(self, name):
+        """Preprocess depth data including image to torch conversion
+
+        Parameters
+        ----------
+        img : _type_
+            _description_
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        depth_path = str(self.depth_dir / f"{name}_depth.png")
+        depth_pc = PointCloud(depth_path, depth_scale=0.001, depth_trunc=20000)
+        depth_array = depth_pc.convert_depth_to_point_array(depth_file=depth_path)
+        depth_tensor = torch.tensor(depth_array, dtype=torch.float32)
+
+        return depth_tensor
 
     def getitem(self, idx):
         name = self.image_names[idx].split(".")[0]
@@ -221,6 +246,7 @@ class _Dataset(torch.utils.data.Dataset):
         # TODO read_image to load_image + grayscale inclusion
         img_rgb = read_image(self.image_dir / f"{name}.png", self.grayscale)
         img_depth = cv2.imread(str(self.depth_dir / f"{name}_depth.png"), cv2.IMREAD_UNCHANGED)
+        img_depth = img_depth.astype(np.float32)
         # img_irL = read_image(self.depth_dir / f"{name}_irL.png")
         # img_irR = read_image(self.depth_dir / f"{name}_irR.png")
 
@@ -234,15 +260,19 @@ class _Dataset(torch.utils.data.Dataset):
             with open(f"{self.depth_prep_dir}/{name}.txt", "rb") as f:
                 depth = float(f.readline())
         else:
-            depth = self._preprocess_depth_data(img_depth, name)
+            depth, depth_array = self._preprocess_depth_data(img_depth, name)
 
+        depth, depth_array = self._preprocess_depth_data(img_depth, name)
         depth = torch.tensor([depth], dtype=torch.float32)
+
+        # img_depth1 = self._preprocess_depth_img(name)
 
         # TODO read target values
         data = {
             "name": name,
             "rgb": img_rgb,
             "depth": depth,
+            "depth_img": depth_array,
             # "irL": img_irL,
             # "irR": img_irR,
             # "idx": idx,

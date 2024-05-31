@@ -40,9 +40,18 @@ class initialModel(BaseModel):
 
     def _forward(self, x):
         # Model Architecture
-        d = x[1]
-        x = self.backbone(x[0])
-        x = self.head(x, d)
+        print(x[0].shape)
+        print(x[1].shape)
+        print(x[2].shape)
+        # problem dass 3 channels erwartet werden (vom vgg)
+        x[2] = x[2].unsqueeze(1)  # Add a channel dimension
+        x[2] = x[2].repeat(1, 3, 1, 1)
+        print(x[2].shape)
+
+        x0 = self.backbone(x[0].float())  # rgb_img backbone feature extraction
+        di = self.backbone(x[2].float())  # depth_img backbone feature extraction
+        d = x[1].float()  # height estimation
+        x = self.head(x0, d, di)  # head feature extraction (transfer to class ModelHead and forward fct)
         return x
 
     def loss(self, pred, ground_truth):
@@ -57,7 +66,6 @@ class ModelHead(torch.nn.Module):
         super(ModelHead, self).__init__()
 
         self.name = "ModelHead"
-
         self.flatten = torch.nn.Flatten()
         self.linear1 = torch.nn.Linear(4096, 200)
         self.linear2 = torch.nn.Linear(200, 12)
@@ -65,8 +73,10 @@ class ModelHead(torch.nn.Module):
         self.finalLayer = torch.nn.Linear(12 + 1, 3)
         self.sigmoid = torch.nn.Sigmoid()
 
-    def forward(self, x, d):
+    def forward(self, x, d, di):
         # Final Layer output: 4 values (height, fw_plant, number of tomatoes, leaf_area)
+        x = torch.cat((x, di), dim=1)
+        print("I was here")
         x = self.flatten(x)
         x = self.linear1(x)
         x = self.activation_ReLu(x)
